@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-2.0-only"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.8"
+VERSION="1.18.9"
 
 ARCH=$(uname -m)
 
@@ -130,26 +130,14 @@ check_enable_rtc_windows() {
   fi
 }
 
-check_pro_ver() {
-    for p in l7-ardour l7-ark l7-audacity l7-baloo5 l7-base-files \
-    l7-breeze-gtk l7-breeze-icons l7-breeze l7-desktop-file-utils \
-    l7-fish-shell l7-gimp l7-godot l7-gwenview l7-kate5 l7-kcmutils \
-    l7-keepassxc l7-konsole l7-krita l7-kscreenlocker l7-kservice \
-    l7-libreoffice l7-obs l7-papirus-icon-theme l7-pipewire \
-    l7-plasma-desktop l7-plasma-framework l7-runit-void l7-scribus \
-    l7-sddm l7-shadow l7-systemsettings l7-v4l2loopback ; do
-        xbps-query -p pkgname ${p}
-    done
-}
-
 check_version() {
-  if xbps-query -p pkgver l7-runit-void | grep l7-runit-void-2021 >/dev/null 2>&1; then
+  if xbps-query -p pkgver l7-base-files | grep l7-base-files-0.142 >/dev/null 2>&1; then
     echo -e "\033[1;36m[*]\033[0m Remove temporary cache"
     rm -v /var/cache/xbps/l7-*
     echo -e "\033[1;36m[*]\033[0m Reinstall Packages version"
     # downgrade if available packages
-    propackages=$(check_pro_ver | xargs)
-    xbps-install -f -y $propackages
+    l7_packages=$(xbps-query -l | awk '{ print $2 }' | xargs -n1 xbps-uhelper getpkgname | grep l7 | xargs)
+    xbps-install -f -y $l7_packages
     else
     echo >/dev/null 2>&1
   fi
@@ -164,28 +152,12 @@ check_patch() {
       P01="l7-ardour"
     fi
   fi
-  # P02 ark
-  if xbps-query ark | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/arkrc >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P02="l7-ark"
-    fi
-  fi
   # P03 audacity
   if xbps-query audacity | grep 'state: installed' >/dev/null 2>&1; then
     if cat /etc/skel/.audacity-data/audacity.cfg >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P03="l7-audacity"
-    fi
-  fi
-  # P04 baloo5
-  if xbps-query baloo5 | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/baloorc | grep -oE 'Indexing-Enabled=false' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P04="l7-baloo5"
+      P02="l7-audacity"
     fi
   fi
   # P05 base-files
@@ -193,31 +165,7 @@ check_patch() {
     if cat /usr/bin/lsb_release | grep -oE 'codename="langitketujuh"' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P05="l7-base-files"
-    fi
-  fi
-  # P06 breeze-gtk
-  if xbps-query breeze-gtk | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/gtk-3.0/settings.ini | grep -oE 'gtk-theme-name=Breeze-Dark' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P06="l7-breeze-gtk"
-    fi
-  fi
-  # P07 breeze-icons
-  if xbps-query breeze-icons | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /usr/share/icons/breeze/places/64/start-here-kde.svg | grep -oE '#60a5fa' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P07="l7-breeze-icons"
-    fi
-  fi
-  # P08 l7-desktop-file-utils
-  if xbps-query desktop-file-utils | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/mimeapps.list >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P08="l7-desktop-file-utils"
+      P03="l7-base-files"
     fi
   fi
   # P09 l7-fish-shell
@@ -225,7 +173,7 @@ check_patch() {
     if cat /etc/skel/.config/fish/fish_variables >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P09="l7-fish-shell"
+      P04="l7-fish-shell"
     fi
   fi
   # P10 l7-gimp
@@ -233,7 +181,7 @@ check_patch() {
     if cat /etc/skel/.config/GIMP/2.10/gimprc | grep -oE 'theme "System"' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P10="l7-gimp"
+      P05="l7-gimp"
     fi
   fi
   # P11 l7-godot
@@ -241,39 +189,7 @@ check_patch() {
     if cat /etc/skel/.config/godot/editor_settings-3.tres >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P11="l7-godot"
-    fi
-  fi
-  # P12 l7-gwenview
-  if xbps-query gwenview | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/gwenviewrc >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P12="l7-gwenview"
-    fi
-  fi
-  # P13 l7-kate5
-  if xbps-query kate5 | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/katerc >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P13="l7-kate5"
-    fi
-  fi
-  # P14 l7-kcmutils
-  if xbps-query kcmutils | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/kcminputrc >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P14="l7-kcmutils"
-    fi
-  fi
-  # P15 l7-konsole
-  if xbps-query konsole | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/konsolerc >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P15="l7-konsole"
+      P06="l7-godot"
     fi
   fi
   # P16 l7-krita
@@ -281,15 +197,7 @@ check_patch() {
     if cat /etc/skel/.config/kritarc | grep -oE 'Theme=Breeze Dark' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P16="l7-krita"
-    fi
-  fi
-  # P17 l7-kscreenlocker
-  if xbps-query kscreenlocker | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/kscreenlockerrc >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P17="l7-kscreenlocker"
+      P07="l7-krita"
     fi
   fi
   # P18 l7-libreoffice
@@ -297,7 +205,7 @@ check_patch() {
     if cat /etc/skel/.config/libreoffice/4/user/registrymodifications.xcu >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P18="l7-libreoffice"
+      P08="l7-libreoffice"
     fi
   fi
   # P19 l7-obs
@@ -305,7 +213,7 @@ check_patch() {
     if cat /etc/skel/.config/obs-studio/global.ini >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P19="l7-obs"
+      P09="l7-obs"
     fi
   fi
   # P20 l7-pipewire
@@ -313,25 +221,7 @@ check_patch() {
     if cat /etc/skel/.config/autostart/PipeWire.desktop | grep -oE 'pipewire' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P20="l7-pipewire"
-    fi
-  fi
-  # P21 l7-plasma-desktop
-  if xbps-query plasma-desktop | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml \
-    | grep -oE 'system.update.langitketujuh.desktop' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P21="l7-plasma-desktop"
-    fi
-  fi
-  # P22 l7-plasma-framework
-  if xbps-query plasma-framework | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /usr/share/plasma/desktoptheme/default/metadata.desktop \
-    | grep -oE 'defaultWallpaperTheme=LangitKetujuh' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P22="l7-plasma-framework"
+      P10="l7-pipewire"
     fi
   fi
   # P23 l7-runit-void
@@ -339,7 +229,7 @@ check_patch() {
     if cat /etc/os-release | grep -oE 'NAME="LangitKetujuh OS"' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P23="l7-runit-void"
+      P11="l7-runit-void"
     fi
   fi
   # P24 l7-scribus
@@ -347,15 +237,7 @@ check_patch() {
     if cat /etc/skel/.config/scribus/prefs150.xml >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P24="l7-scribus"
-    fi
-  fi
-  # P25 l7-sddm
-  if xbps-query sddm | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/sddm.conf.d/kde_settings.conf | grep -oE 'Current=langitketujuh' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P25="l7-sddm"
+      P12="l7-scribus"
     fi
   fi
   # P26 l7-shadow
@@ -363,15 +245,7 @@ check_patch() {
     if cat /etc/default/useradd | grep -oE 'fish' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P26="l7-shadow"
-    fi
-  fi
-  # P27 l7-systemsettings
-  if xbps-query systemsettings | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/systemsettingsrc >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P27="l7-systemsettings"
+      P13="l7-shadow"
     fi
   fi
   # P28 runit-backlight
@@ -379,16 +253,137 @@ check_patch() {
     if sv status backlight | grep run >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P28="runit-backlight"
+      P14="runit-backlight"
     fi
   fi
-  # P29 l7-kservice
-  if xbps-query kservice | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/xdg/menus/applications.menu | grep -oE 'LangitKetujuh' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P29="l7-kservice"
+
+  # if use kde plasma
+  if xbps-query plasma-desktop | grep 'state: installed' >/dev/null 2>&1; then
+    echo >/dev/null 2>&1
+    # P02 ark
+    if xbps-query ark | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/arkrc >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P15="l7-ark"
+      fi
     fi
+    # P04 baloo5
+    if xbps-query baloo5 | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/baloorc | grep -oE 'Indexing-Enabled=false' >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P16="l7-baloo5"
+      fi
+    fi
+    # P06 breeze-gtk
+    if xbps-query breeze-gtk | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/gtk-3.0/settings.ini | grep -oE 'gtk-theme-name=Breeze-Dark' >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P17="l7-breeze-gtk"
+      fi
+    fi
+    # P07 breeze-icons
+    if xbps-query breeze-icons | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /usr/share/icons/breeze/places/64/start-here-kde.svg | grep -oE '#60a5fa' >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P18 ="l7-breeze-icons"
+      fi
+    fi
+    # P08 l7-desktop-file-utils
+    if xbps-query desktop-file-utils | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/mimeapps.list >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P19="l7-desktop-file-utils"
+      fi
+    fi
+    # P12 l7-gwenview
+    if xbps-query gwenview | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/gwenviewrc >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P20="l7-gwenview"
+      fi
+    fi
+    # P13 l7-kate5
+    if xbps-query kate5 | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/katerc >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P21="l7-kate5"
+      fi
+    fi
+    # P14 l7-kcmutils
+    if xbps-query kcmutils | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/kcminputrc >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P22="l7-kcmutils"
+      fi
+    fi
+    # P15 l7-konsole
+    if xbps-query konsole | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/konsolerc >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P23="l7-konsole"
+      fi
+    fi
+    # P17 l7-kscreenlocker
+    if xbps-query kscreenlocker | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/kscreenlockerrc >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P24="l7-kscreenlocker"
+      fi
+    fi
+    # P21 l7-plasma-desktop
+    if xbps-query plasma-desktop | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml \
+      | grep -oE 'system.update.langitketujuh.desktop' >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P25="l7-plasma-desktop"
+      fi
+    fi
+    # P22 l7-plasma-framework
+    if xbps-query plasma-framework | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /usr/share/plasma/desktoptheme/default/metadata.desktop \
+      | grep -oE 'defaultWallpaperTheme=LangitKetujuh' >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P26="l7-plasma-framework"
+      fi
+    fi
+    # P25 l7-sddm
+    if xbps-query sddm | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/sddm.conf.d/kde_settings.conf | grep -oE 'Current=langitketujuh' >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P27="l7-sddm"
+      fi
+    fi
+    # P27 l7-systemsettings
+    if xbps-query systemsettings | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/skel/.config/systemsettingsrc >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P28="l7-systemsettings"
+      fi
+    fi
+    # P29 l7-kservice
+    if xbps-query kservice | grep 'state: installed' >/dev/null 2>&1; then
+      if cat /etc/xdg/menus/applications.menu | grep -oE 'LangitKetujuh' >/dev/null 2>&1; then
+        echo >/dev/null 2>&1
+        else
+        P29="l7-kservice"
+      fi
+    fi
+    else
+    echo >/dev/null 2>&1
   fi
 }
 
