@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-2.0-only"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.9"
+VERSION="1.18.10"
 
 ARCH=$(uname -m)
 
@@ -26,9 +26,13 @@ echo
 license : $LICENSE
 usage   : $NAME [option]
 option  :
-          --update      -u    update system
-          --remote      -r    remote from terminal
           --downgrade   -d    downgrade & uninstall program
+          --chroot      -c    chroot mode
+          --grub        -g    install grub
+          --patch       -p    reinstall patch
+          --remote      -r    remote from terminal
+          --update      -u    update system
+          --user        -u    create new user
           --help        -h    show this help
           --version     -v    show $NAME version
 
@@ -451,6 +455,89 @@ for arg in "$@"; do
             fi
             tmate
             ;;
+        --chroot|-c)
+            check_root
+            echo; lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
+            echo
+            read -e -p "[*] Boot mode UEFI (y/n): " boot_opt
+            if [[ $boot_opt =~ ^[Yy]$ ]]; then
+              boot_target="boot/efi"
+              else
+              boot_target="boot"
+            fi
+            read -e -p "[*] Root partition (ex: sda2): " root_part
+            read -e -p "[*] Boot partition (ex: sda1): " boot_part
+            # mount root
+            mount /dev/$root_part /mnt/
+            # mount boot
+            mkdir -p /mnt/$boot_target
+            mount /dev/$boot_part /mnt/$boot_target
+            # mount sys, dev, proc
+            mount --rbind /sys /mnt/sys && mount --make-rslave /mnt/sys
+            mount --rbind /dev /mnt/dev && mount --make-rslave /mnt/dev
+            mount --rbind /proc /mnt/proc && mount --make-rslave /mnt/proc
+            # chroot mode
+            echo
+            chroot /mnt/ /bin/fish
+            umount -R /mnt >/dev/null 2>&1
+            echo; echo -e "[*] Chroot exit"
+            ;;
+        --grub|-g)
+            check_root
+            echo; lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
+            echo
+            read -e -p "[*] Boot mode UEFI (y/n): " boot_opt
+            if [[ $boot_opt =~ ^[Yy]$ ]]; then
+              read -e -p "[*] Continue install grub (Y/n): " continue
+              if [[ $continue =~ ^[Yy]$ ]]; then
+                echo
+                grub-install --target=x86_64-efi \
+                --efi-directory=/boot/efi --bootloader-id="LangitKetujuh"
+                else
+                exit
+              fi
+              else
+              read -e -p "[*] Bootloader (ex: sda): " boot_loader
+              read -e -p "[*] Continue install grub (Y/n): " continue
+              if [[ $continue =~ ^[Yy]$ ]]; then
+                echo
+                grub-install /dev/$boot_loader
+                else
+                exit
+              fi
+            fi
+            ;;
+        --user|-u)
+            check_root
+            read -e -p "[*] User name: " user_name
+            read -e -p "[*] Full name: " full_name
+            read -e -p "[*] As Administrator (Y/n): " admin_user
+            if [[ $admin_user =~ ^[Yy]$ ]]; then
+              user_group="$user_name,wheel"
+              else
+              user_group="$user_name"
+            fi
+            echo -e "[*] Create user: \033[1;36m$user_name ($full_name)\033[0m"
+            read -e -p "[*] Continue create user (Y/n): " continue
+            if [[ $continue =~ ^[Yy]$ ]]; then
+              useradd $user_name -c "$full_name"
+              echo -e "[*] Create new user password"
+              passwd $user_name
+              usermod -a $user_name -G $user_group,audio,video,floppy,cdrom,optical,kvm,xbuilder
+              echo -e "[*] User $user_name created successfully"
+              else
+              exit
+            fi
+            ;;
+        --patch|-p)
+            check_root
+            check_version
+            check_patch
+            reinstall_patch
+            check_screen_tearing_intel
+            check_enable_os_prober
+            check_enable_rtc_windows
+            ;;
         --adobe-icc|-a)
             check_root
             echo -e "\033[1;36m[0]\033[0m Checking"
@@ -741,6 +828,6 @@ for arg in "$@"; do
             ;;
         *)
             echo -e "Please run : \033[1;33mdoas l7-tools --update\033[0m"
-            exit 2
+            exit 0
     esac
 done
