@@ -65,7 +65,7 @@ check_screen_tearing_intel(){
   fi
 }
 
-update_grub() {
+prober-update-grub() {
   os-prober
   update-grub
 }
@@ -78,21 +78,22 @@ check_enable_os_prober() {
       else
       echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
       echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
-      update_grub
+      prober-update-grub
     fi
     else # if uefi singleboot
     if [ $(ls /boot/efi/EFI/ | wc -l) -eq 1 ]; then
       if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" | grep '#' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
+      update-grub
         else
         if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" >/dev/null 2>&1; then
           echo -e "\033[1;36m[*]\033[0m Disable GRUB os-prober"
           sed -i 's/GRUB_DISABLE_OS_PROBER=false/#GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub >/dev/null 2>&1
-          update_grub
+          prober-update-grub
         else
           echo -e "\033[1;36m[*]\033[0m Disable GRUB os-prober"
           echo "#GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
-          update_grub
+          prober-update-grub
         fi
       fi
       else # if uefi dualboot or more
@@ -100,7 +101,7 @@ check_enable_os_prober() {
       echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
       echo -e "\033[1;36m[*] Detect Other EFI:\033[0m" $(ls /boot/efi/EFI/ | xargs)
       sed -i 's/#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub >/dev/null 2>&1
-      update_grub
+      prober-update-grub
         else
         if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" >/dev/null 2>&1; then
           echo >/dev/null 2>&1
@@ -108,7 +109,7 @@ check_enable_os_prober() {
           echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
           echo -e "\033[1;36m[*] Detect Other EFI:\033[0m" $(ls /boot/efi/EFI/ | xargs)
           echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
-          update_grub
+          prober-update-grub
         fi
       fi
     fi
@@ -459,28 +460,41 @@ for arg in "$@"; do
             check_root
             echo; lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
             echo
-            read -e -p "[*] Boot mode UEFI (y/n): " boot_opt
-            if [[ $boot_opt =~ ^[Yy]$ ]]; then
-              boot_target="boot/efi"
-              else
-              boot_target="boot"
-            fi
             read -e -p "[*] Root partition (ex: sda2): " root_part
-            read -e -p "[*] Boot partition (ex: sda1): " boot_part
-            # mount root
             mount /dev/$root_part /mnt/
-            # mount boot
-            mkdir -p /mnt/$boot_target
-            mount /dev/$boot_part /mnt/$boot_target
-            # mount sys, dev, proc
-            mount --rbind /sys /mnt/sys && mount --make-rslave /mnt/sys
-            mount --rbind /dev /mnt/dev && mount --make-rslave /mnt/dev
-            mount --rbind /proc /mnt/proc && mount --make-rslave /mnt/proc
+            read -e -p "[*] Boot mode uefi (y/n): " boot_opt
+            if [[ $boot_opt =~ ^[Yy]$ ]]; then
+              # for separate efi partition (uefi)
+              read -e -p "[*] Boot efi partition (ex: sda1): " boot_part
+              boot_target="boot/efi"
+              mkdir -p /mnt/$boot_target
+              mount /dev/$boot_part /mnt/$boot_target
+              else
+              # for separate bios partition (legacy)
+              read -e -p "[*] Separate boot bios partition (y/n): " boot_separate
+              if [[ $boot_separate =~ ^[Yy]$ ]]; then
+                read -e -p "[*] Boot bios partition (ex: sda1): " boot_part
+                boot_target="boot"
+                mkdir -p /mnt/$boot_target
+                mount /dev/$boot_part /mnt/$boot_target
+                else
+                # for merged root & bios partition (legacy)
+                echo >/dev/null 2>&1
+              fi
+            fi
+            # mount sys, dev, proc, run
+            for dir in dev proc sys run;
+              do mkdir -p /mnt/$dir ;
+              mount --rbind /$dir /mnt/$dir ;
+              mount --make-rslave /mnt/$dir ;
+            done
+            # enable network
+            cp /etc/resolv.conf /mnt/etc/
             # chroot mode
             echo
             chroot /mnt/ /bin/fish
             umount -R /mnt >/dev/null 2>&1
-            echo; echo -e "[*] Chroot exit"
+            echo -e "[*] Chroot exit"
             ;;
         --grub|-g)
             check_root
@@ -493,6 +507,7 @@ for arg in "$@"; do
                 echo
                 grub-install --target=x86_64-efi \
                 --efi-directory=/boot/efi --bootloader-id="LangitKetujuh"
+                check_enable_os_prober
                 else
                 exit
               fi
@@ -502,6 +517,7 @@ for arg in "$@"; do
               if [[ $continue =~ ^[Yy]$ ]]; then
                 echo
                 grub-install /dev/$boot_loader
+                check_enable_os_prober
                 else
                 exit
               fi
