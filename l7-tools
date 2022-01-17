@@ -9,14 +9,6 @@ VERSION="1.18.10"
 
 ARCH=$(uname -m)
 
-check_confict() {
-  for f in ardour base-files breeze-icons plasma-desktop runit-void; do
-    if [ -n "$(xbps-query -s ${f})" ]; then
-      xbps-install -y $f &>/dev/null
-    fi
-  done
-}
-
 usage()
 {
 echo -e "\n\033[1;33m$TITLE $VERSION\033[0m"
@@ -418,9 +410,6 @@ quit(){
 
 for arg in "$@"; do
     case $arg in
-        --test|-t)
-            check_confict
-            ;;
         --update|-u)
             check_root
             echo -e "\033[1;36m[1]\033[0m Synchronization"
