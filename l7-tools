@@ -12,7 +12,7 @@ ARCH=$(uname -m)
 usage()
 {
 echo -e "\n\033[1;33m$TITLE $VERSION\033[0m"
-echo -e "\e[3mConfiguring tool and installing third-party\e[0m"
+echo -e "\e[3mConfiguring tool, updater, chroot and grub installer.\e[0m"
 echo
     cat <<- EOF
 license : $LICENSE
@@ -27,14 +27,6 @@ option  :
           --user        -m    create new user
           --help        -h    show this help
           --version     -v    show $NAME version
-
-        color profile:
-          --adobe-icc   -a    install adobe icc
-          --idea-icc    -i    install idealliance icc
-          --eci-icc     -e    install eci icc
-          --jpma-icc    -j    install jpma icc
-          --vigc-icc    -g    install vigc icc
-          --snap-icc    -g    install snap committee icc
 
 EOF
 }
@@ -76,7 +68,6 @@ check_enable_os_prober() {
     if [ $(ls /boot/efi/EFI/ | wc -l) -eq 1 ]; then
       if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" | grep '#' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
-      update-grub
         else
         if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" >/dev/null 2>&1; then
           echo -e "\033[1;36m[*]\033[0m Disable GRUB os-prober"
@@ -149,234 +140,82 @@ check_patch() {
       P01="l7-ardour"
     fi
   fi
-  # P03 audacity
-  if xbps-query audacity | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.audacity-data/audacity.cfg >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P02="l7-audacity"
-    fi
-  fi
-  # P05 base-files
+  # P02 base-files
   if xbps-query base-files | grep 'state: installed' >/dev/null 2>&1; then
     if cat /usr/bin/lsb_release | grep -oE 'codename="langitketujuh"' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P03="l7-base-files"
+      P02="l7-base-files"
     fi
   fi
-  # P09 l7-fish-shell
-  if xbps-query fish-shell | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/fish/fish_variables >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P04="l7-fish-shell"
-    fi
-  fi
-  # P10 l7-gimp
-  if xbps-query gimp | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/GIMP/2.10/gimprc | grep -oE 'theme "System"' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P05="l7-gimp"
-    fi
-  fi
-  # P11 l7-godot
-  if xbps-query godot | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/godot/editor_settings-3.tres >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P06="l7-godot"
-    fi
-  fi
-  # P16 l7-krita
-  if xbps-query krita | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/kritarc | grep -oE 'Theme=Breeze Dark' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P07="l7-krita"
-    fi
-  fi
-  # P18 l7-libreoffice
-  if xbps-query libreoffice | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/libreoffice/4/user/registrymodifications.xcu >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P08="l7-libreoffice"
-    fi
-  fi
-  # P19 l7-obs
-  if xbps-query obs | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/obs-studio/global.ini >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P09="l7-obs"
-    fi
-  fi
-  # P20 l7-pipewire
-  if xbps-query pipewire | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/autostart/PipeWire.desktop | grep -oE 'pipewire' >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P10="l7-pipewire"
-    fi
-  fi
-  # P23 l7-runit-void
+  # P03 l7-runit-void
   if xbps-query runit-void | grep 'state: installed' >/dev/null 2>&1; then
     if cat /etc/os-release | grep -oE 'NAME="LangitKetujuh OS"' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P11="l7-runit-void"
+      P03="l7-runit-void"
     fi
   fi
-  # P24 l7-scribus
-  if xbps-query scribus | grep 'state: installed' >/dev/null 2>&1; then
-    if cat /etc/skel/.config/scribus/prefs150.xml >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      P12="l7-scribus"
-    fi
-  fi
-  # P26 l7-shadow
+  # P04 l7-shadow
   if xbps-query shadow | grep 'state: installed' >/dev/null 2>&1; then
     if cat /etc/default/useradd | grep -oE 'fish' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P13="l7-shadow"
+      P04="l7-shadow"
     fi
   fi
-  # P28 runit-backlight
+  # P05 runit-backlight
   if xbps-query runit | grep 'state: installed' >/dev/null 2>&1; then
     if sv status backlight | grep run >/dev/null 2>&1; then
       echo >/dev/null 2>&1
       else
-      P14="runit-backlight"
+      P05="runit-backlight"
     fi
   fi
 
   # if use kde plasma
   if xbps-query plasma-desktop | grep 'state: installed' >/dev/null 2>&1; then
     echo >/dev/null 2>&1
-    # P02 ark
-    if xbps-query ark | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/arkrc >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P15="l7-ark"
-      fi
-    fi
-    # P04 baloo5
-    if xbps-query baloo5 | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/baloorc | grep -oE 'Indexing-Enabled=false' >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P16="l7-baloo5"
-      fi
-    fi
-    # P06 breeze-gtk
-    if xbps-query breeze-gtk | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/gtk-3.0/settings.ini | grep -oE 'gtk-theme-name=Breeze-Dark' >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P17="l7-breeze-gtk"
-      fi
-    fi
-    # P07 breeze-icons
+    # P90 breeze-icons
     if xbps-query breeze-icons | grep 'state: installed' >/dev/null 2>&1; then
       if cat /usr/share/icons/breeze/places/64/start-here-kde.svg | grep -oE '#60a5fa' >/dev/null 2>&1; then
         echo >/dev/null 2>&1
         else
-        P18 ="l7-breeze-icons"
+        P90 ="l7-breeze-icons"
       fi
     fi
-    # P08 l7-desktop-file-utils
-    if xbps-query desktop-file-utils | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/mimeapps.list >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P19="l7-desktop-file-utils"
-      fi
-    fi
-    # P12 l7-gwenview
-    if xbps-query gwenview | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/gwenviewrc >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P20="l7-gwenview"
-      fi
-    fi
-    # P13 l7-kate5
-    if xbps-query kate5 | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/katerc >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P21="l7-kate5"
-      fi
-    fi
-    # P14 l7-kcmutils
-    if xbps-query kcmutils | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/kcminputrc >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P22="l7-kcmutils"
-      fi
-    fi
-    # P15 l7-konsole
-    if xbps-query konsole | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/konsolerc >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P23="l7-konsole"
-      fi
-    fi
-    # P17 l7-kscreenlocker
-    if xbps-query kscreenlocker | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/kscreenlockerrc >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P24="l7-kscreenlocker"
-      fi
-    fi
-    # P21 l7-plasma-desktop
+    # P91 l7-plasma-desktop
     if xbps-query plasma-desktop | grep 'state: installed' >/dev/null 2>&1; then
       if cat /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml \
       | grep -oE 'system.update.langitketujuh.desktop' >/dev/null 2>&1; then
         echo >/dev/null 2>&1
         else
-        P25="l7-plasma-desktop"
+        P91="l7-plasma-desktop"
       fi
     fi
-    # P22 l7-plasma-framework
+    # P92 l7-plasma-framework
     if xbps-query plasma-framework | grep 'state: installed' >/dev/null 2>&1; then
       if cat /usr/share/plasma/desktoptheme/default/metadata.desktop \
       | grep -oE 'defaultWallpaperTheme=LangitKetujuh' >/dev/null 2>&1; then
         echo >/dev/null 2>&1
         else
-        P26="l7-plasma-framework"
+        P92="l7-plasma-framework"
       fi
     fi
-    # P25 l7-sddm
+    # P93 l7-sddm
     if xbps-query sddm | grep 'state: installed' >/dev/null 2>&1; then
       if cat /etc/sddm.conf.d/kde_settings.conf | grep -oE 'Current=langitketujuh' >/dev/null 2>&1; then
         echo >/dev/null 2>&1
         else
-        P27="l7-sddm"
+        P93="l7-sddm"
       fi
     fi
-    # P27 l7-systemsettings
-    if xbps-query systemsettings | grep 'state: installed' >/dev/null 2>&1; then
-      if cat /etc/skel/.config/systemsettingsrc >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-        else
-        P28="l7-systemsettings"
-      fi
-    fi
-    # P29 l7-kservice
+    # P94 l7-kservice
     if xbps-query kservice | grep 'state: installed' >/dev/null 2>&1; then
       if cat /etc/xdg/menus/applications.menu | grep -oE 'LangitKetujuh' >/dev/null 2>&1; then
         echo >/dev/null 2>&1
         else
-        P29="l7-kservice"
+        P94="l7-kservice"
       fi
     fi
     else
@@ -386,11 +225,11 @@ check_patch() {
 
 reinstall_patch() {
   # check packages
-  if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P07 $P08 $P09 $P10 $P11 $P12 $P13 $P14 $P15 $P16 $P17 $P18 $P19 $P20 $P21 $P22 $P23 $P24 $P25 $P26 $P27 $P28 $P29" | sed 's/ //g' | wc -c) -eq 0 ]; then
+  if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
     echo >/dev/null 2>&1
     else
     echo -e "\033[1;36m[*]\033[0m Reinstall patch"
-    xbps-install -fy $P01 $P02 $P03 $P04 $P05 $P06 $P07 $P08 $P09 $P10 $P11 $P12 $P13 $P14 $P15 $P16 $P17 $P18 $P19 $P20 $P21 $P22 $P23 $P24 $P25 $P26 $P27 $P28 $P29
+    xbps-install -fy $P01 $P02 $P03 $P04 $P05 $P90 $P91 $P92 $P93 $P94
   fi
   # check service
   for s in adb backlight bluetoothd bluez-alsa colord earlyoom ntpd zramen; do
@@ -543,285 +382,41 @@ for arg in "$@"; do
             check_enable_os_prober
             check_enable_rtc_windows
             ;;
-        --adobe-icc|-a)
-            check_root
-            echo -e "\033[1;36m[0]\033[0m Checking"
-            if find /usr/share/color/icc/adobe/ -name "*.icc" -type f >/dev/null 2>&1; then
-              echo -e "\033[1;36m[FINISH]\033[0m Adobe icc installed"
-              exit;
-              else
-              echo -e "\033[1;36m[1]\033[0m Preparing new dir $TMP"
-              mkdir $TMP/adobe-icc >/dev/null 2>&1
-              cd $TMP/adobe-icc
-              echo -e "\033[1;36m[2]\033[0m Download Adobe icc profiles"
-              wget -c https://download.adobe.com/pub/adobe/iccprofiles/mac/AdobeICCProfilesCS4Mac_end-user.zip >/dev/null 2>&1
-              echo -e "\033[1;36m[3]\033[0m Unzip"
-              unzip -o -qq AdobeICCProfilesCS4Mac_end-user.zip
-              echo -e "\033[1;36m[4]\033[0m Installing"
-              install -D -m644 -t /usr/share/color/icc/adobe/ */RGB/*.icc
-              install -D -m644 -t /usr/share/color/icc/adobe/ */CMYK/*.icc
-              install -D -m644 -t /usr/share/doc/adobe */*.pdf
-              if find /usr/share/color/icc/adobe/ -name "*.icc" -type f >/dev/null 2>&1; then
-                echo -e "\033[1;36m[FINISH]\033[0m Adobe icc installed"
-                else
-                echo -e "\033[1;91m[FAILED]\033[0m Adobe icc profiles not installed!"
-                exit;
-              fi
-            fi
-            ;;
-        --scribus-icc|-j)
-            check_root
-            echo -e "\033[1;36m[0]\033[0m Checking"
-            if find /usr/share/color/icc/scribus/ -name "*.icc" -type f >/dev/null 2>&1; then
-              echo -e "\033[1;36m[FINISH]\033[0m Icc profiles from Scribus installed"
-              exit;
-              else
-              echo -e "\033[1;36m[1]\033[0m Preparing new dir $TMP"
-              mkdir $TMP/scribus-icc >/dev/null 2>&1
-              cd $TMP/scribus-icc
-              echo -e "\033[1;36m[2]\033[0m Download icc profiles from Scribus"
-              wget -c https://github.com/scribusproject/scribus/raw/master/resources/profiles/GenericCMYK.icm >/dev/null 2>&1
-              wget -c https://github.com/scribusproject/scribus/raw/master/resources/profiles/ISOcoated_v2_300_bas.icc >/dev/null 2>&1
-              echo -e "\033[1;36m[3]\033[0m Installing"
-              install -D -m644 -t /usr/share/color/icc/scribus *
-              if find /usr/share/color/icc/scribus/ -name "*.icc" -type f >/dev/null 2>&1; then
-                echo -e "\033[1;36m[FINISH]\033[0m Icc profiles from Scribus installed"
-                else
-                echo -e "\033[1;91m[FAILED]\033[0m Icc profiles from Scribus not installed!"
-              exit;
-              fi
-            fi
-            ;;
-        --eci-icc|-e)
-            check_root
-            echo -e "\033[1;36m[0]\033[0m Checking"
-            if find /usr/share/color/icc/eci/ -name "*.icc" -type f >/dev/null 2>&1; then
-              echo -e "\033[1;36m[FINISH]\033[0m ECI icc profiles installed"
-              exit;
-              else
-              echo -e "\033[1;36m[1] Preparing new dir $TMP"
-              mkdir $TMP/eci-icc >/dev/null 2>&1
-              cd $TMP/eci-icc
-              echo -e "\033[1;36m[2]\033[0m\033[0m Download ECI icc profiles"
-              wget -c www.eci.org/lib/exe/fetch.php?media=downloads:icc_profiles_from_eci:eci_offset_2009.zip >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/PSOcoated_v3.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/PSOuncoated_v3_FOGRA52.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/PSOsc-b_paper_v3_FOGRA54.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/SC_paper_eci.icc >/dev/null 2>&1
-              echo -e "\033[1;36m[3]\033[0m Installing"
-              install -D -m644 -t /usr/share/color/icc/eci *.icc
-              if find /usr/share/color/icc/eci/ -name "*.icc" -type f >/dev/null 2>&1; then
-                echo -e "\033[1;36m[FINISH]\033[0m ECI icc profiles installed"
-                else
-                echo -e "\033[1;91m[FAILED]\033[0m ECI icc not installed!"
-                exit;
-              fi
-            fi
-            ;;
-        --idea-icc|-i)
-            check_root
-            echo -e "\033[1;36m[0]\033[0m Checking"
-            if find /usr/share/color/icc/idealliance/ -name "*.icc" -type f >/dev/null 2>&1; then
-              echo -e "\033[1;36m[FINISH]\033[0m IDEAlliance icc profiles installed"
-              exit;
-              else
-              echo -e "\033[1;36m[1]\033[0m Preparing new dir $TMP"
-              mkdir $TMP/idea-icc >/dev/null 2>&1
-              cd $TMP/idea-icc
-              echo -e "\033[1;36m[2]\033[0m Download IDEAlliance icc profiles"
-              wget -c http://www.color.org/registry/profiles/JapanColor2011Coated.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/CGATS21_CRPC7.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/CGATS21_CRPC6.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/GRACoL2013_CRPC6.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/GRACoL2006_Coated1v2.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/CGATS21_CRPC5.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/SWOP2013C3_CRPC5.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/SWOP2006_Coated3v2.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/CGATS21_CRPC4.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/CGATS21_CRPC3.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/GRACoL2013UNC_CRPC3.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/SWOP2006_Coated5v2.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/CGATS21_CRPC2.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/CGATS21_CRPC1.icc >/dev/null 2>&1
-              echo -e "\033[1;36m[3]\033[0m Installing"
-              install -D -m644 -t /usr/share/color/icc/idealliance *.icc
-              if find /usr/share/color/icc/idealliance/ -name "*.icc" -type f >/dev/null 2>&1; then
-                echo -e "\033[1;36m[FINISH]\033[0m IDEAlliance icc profiles installed"
-                else
-                echo -e "\033[1;91m[FAILED]\033[0m IDEAlliance icc not installed!"
-                exit;
-              fi
-            fi
-            ;;
-        --jpma-icc|-j)
-            check_root
-            echo -e "\033[1;36m[0]\033[0m Checking"
-            if find /usr/share/color/icc/jpma/ -name "*.icc" -type f >/dev/null 2>&1; then
-              echo -e "\033[1;36m[FINISH]\033[0m Japan Printing Machinery Association icc profiles installed"
-              exit;
-              else
-              echo -e "\033[1;36m[1]\033[0m Preparing new dir $TMP"
-              mkdir $TMP/jpma-icc >/dev/null 2>&1
-              cd $TMP/jpma-icc
-              echo -e "\033[1;36m[2]\033[0m Download Japan Printing Machinery Association icc profiles"
-              wget -c http://www.color.org/registry/profiles/JapanColor2011Coated.icc >/dev/null 2>&1
-              echo -e "\033[1;36m[3]\033[0m Installing"
-              install -D -m644 -t /usr/share/color/icc/jpma *.icc
-              if find /usr/share/color/icc/jpma/ -name "*.icc" -type f >/dev/null 2>&1; then
-                echo -e "\033[1;36m[FINISH]\033[0m Japan Printing Machinery Association icc profiles installed"
-                else
-                echo -e "\033[1;91m[FAILED]\033[0m Japan Printing Machinery Association icc not installed!"
-                exit;
-              fi
-            fi
-            ;;
-        --vigc-icc|-g)
-            check_root
-            echo -e "\033[1;36m[0]\033[0m Checking"
-            if find /usr/share/color/icc/vigc/ -name "*.icc" -type f >/dev/null 2>&1; then
-              echo -e "\033[1;36m[FINISH]\033[0m VIGC icc profiles installed"
-              exit;
-              else
-              echo -e "\033[1;36m[1]\033[0m Preparing new dir $TMP"
-              mkdir $TMP/vigc-icc >/dev/null 2>&1
-              cd $TMP/vigc-icc
-              echo -e "\033[1;36m[2]\033[0m Download VIGC icc profiles"
-              wget -c http://www.color.org/registry/profiles/Coated_Fogra39L_VIGC_300.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/Coated_Fogra39L_VIGC_260.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/Uncoated_Fogra47L_VIGC_260.icc >/dev/null 2>&1
-              wget -c http://www.color.org/registry/profiles/Uncoated_Fogra47L_VIGC_300.icc >/dev/null 2>&1
-              echo -e "\033[1;36m[3]\033[0m Installing"
-              install -D -m644 -t /usr/share/color/icc/vigc *.icc
-              if find /usr/share/color/icc/vigc/ -name "*.icc" -type f >/dev/null 2>&1; then
-                echo -e "\033[1;36m[FINISH]\033[0m VIGC icc profiles installed"
-                else
-                echo -e "\033[1;91m[FAILED]\033[0m VIGC icc not installed!"
-                exit;
-              fi
-            fi
-            ;;
-        --snap-icc|-g)
-            check_root
-            echo -e "\033[1;36m[0]\033[0m Checking"
-            if find /usr/share/color/icc/snap/ -name "*.icc" -type f >/dev/null 2>&1; then
-              echo -e "\033[1;36m[FINISH]\033[0m SNAP Committee icc profiles installed"
-              exit;
-              else
-              echo -e "\033[1;36m[1]\033[0m Preparing new dir $TMP"
-              mkdir $TMP/snap-icc >/dev/null 2>&1
-              cd $TMP/snap-icc
-              echo -e "\033[1;36m[2]\033[0m Download SNAP Committee icc profiles"
-              wget -c http://www.color.org/registry/profiles/SNAP2007.icc >/dev/null 2>&1
-              echo -e "\033[1;36m[4]\033[0m Installing"
-              install -D -m644 -t /usr/share/color/icc/snap *.icc
-              if ls find /usr/share/color/icc/snap/ -name "*.icc" -type f >/dev/null 2>&1; then
-                echo -e "\033[1;36m[FINISH]\033[0m SNAP Committee icc profiles installed"
-                else
-                echo -e "\033[1;91m[FAILED]\033[0m SNAP Committee icc not installed!"
-                exit;
-              fi
-            fi
-            ;;
         --downgrade|-d)
             check_root
             echo -e "\033[1;36m[1] Display Callibrator\033[0m"
-            echo -e "[*] Packages: \033[1;33mdispcalGUI\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " CALLIBRATION_PKGS
-            if [[ $CALLIBRATION_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -R dispcalGUI
-            fi
+            xbps-remove -R dispcalGUI
             echo -e "\033[1;36m[2] Add-ons 2D Software\033[0m"
-            echo -e "[*] Packages: \033[1;33mgmic gmic-gimp gimp-lqr-plugin xsane-gimp resynthesizer\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " PLUGINS_PKGS
-            if [[ $PLUGINS_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -R gmic gmic-gimp gimp-lqr-plugin xsane-gimp resynthesizer
-            fi
+            xbps-remove -R gmic gmic-gimp gimp-lqr-plugin xsane-gimp resynthesizer l7-krita
             echo -e "\033[1;36m[3] Photography Software\033[0m"
-            echo -e "[*] Packages: \033[1;33mdigikam rawtherapee hugin Converseen\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " PHOTOGRAPHY_PKGS
-            if [[ $PHOTOGRAPHY_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry digikam rawtherapee hugin Converseen
-            fi
+            xbps-remove -R digikam rawtherapee hugin Converseen
             echo -e "\033[1;36m[4] Non-linear Editor\033[0m"
-            echo -e "[*] Packages: \033[1;33mkdenlive handbrake mkvtoolnix-gui\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " VIDEO_EDITOR_PKGS
-            if [[ $VIDEO_EDITOR_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry kdenlive handbrake mkvtoolnix-gui
-            fi
+            xbps-remove -R kdenlive handbrake mkvtoolnix-gui
             echo -e "\033[1;36m[5] Font Maker\033[0m"
-            echo -e "[*] Packages: \033[1;33mfontforge\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " FONT_MAKER_PKGS
-            if [[ $FONT_MAKER_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry fontforge
-            fi
+            xbps-remove -R fontforge
             echo -e "\033[1;36m[6] Digital Painting\033[0m"
-            echo -e "[*] Packages: \033[1;33mkrita l7-krita\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " PAINTING_PKGS
-            if [[ $PAINTING_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry krita l7-krita
-            fi
+            xbps-remove -R krita l7-krita gmic-krita
             echo -e "\033[1;36m[7] Recorder & Broadcaster Software\033[0m"
-            echo -e "[*] Packages: \033[1;33mobs l7-obs\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " RECORD_PKGS
-            if [[ $RECORD_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry obs l7-obs
-            fi
+            xbps-remove -R obs l7-obs
             echo -e "\033[1;36m[8] Layout & Desktop Publishing\033[0m"
-            echo -e "[*] Packages: \033[1;33mscribus l7-scribus\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " PUBLISH_PKGS
-            if [[ $PUBLISH_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry scribus l7-scribus
-            fi
+            xbps-remove -R scribus l7-scribus
             echo -e "\033[1;36m[9] 2D/3D Animation Full Feature\033[0m"
-            echo -e "[*] Packages: \033[1;33mblender synfigstudio opentoonz\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " ANIMATION_PKGS
-            if [[ $ANIMATION_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry blender synfigstudio opentoonz
-            fi
+            xbps-remove -R blender l7-blender synfigstudio opentoonz
             echo -e "\033[1;36m[10] Audio Production\033[0m"
-            echo -e "[*] Packages: \033[1;33maudacity l7-audacity ardour l7-ardour kid3 soundkonverter lmms freepats cmt alsa-plugins-jack zita-ajbridge zita-alsa-pcmi zita-at1 zita-njbridge zita-resampler alsa-plugins-samplerate calf fftw rubberband librubberband ladspa-bs2b speex speexdsp mda-lv2 soundfont-fluid\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " AUDIO_PRO_PKGS
-            if [[ $AUDIO_PRO_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry audacity l7-audacity ardour l7-ardour kid3 soundkonverter lmms freepats cmt alsa-plugins-jack zita-ajbridge zita-alsa-pcmi zita-at1 zita-njbridge zita-resampler alsa-plugins-samplerate calf fftw rubberband librubberband ladspa-bs2b speex speexdsp mda-lv2 soundfont-fluid
-            fi
+            xbps-remove -R audacity l7-audacity ardour l7-ardour kid3 \
+            soundkonverter lmms freepats cmt alsa-plugins-jack zita-ajbridge \
+            zita-alsa-pcmi zita-at1 zita-njbridge zita-resampler \
+            alsa-plugins-samplerate calf fftw rubberband librubberband \
+            ladspa-bs2b speex mda-lv2 soundfont-fluid
             echo -e "\033[1;36m[11] Extra Google Fonts\033[0m"
-            echo -e "[*] Packages: \033[1;33mgoogle-fonts-ttf\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " FONTS_EXTRA_PKGS
-            if [[ $FONTS_EXTRA_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry google-fonts-ttf
-            fi
+            xbps-remove -R google-fonts-ttf
             echo -e "\033[1;36m[12] Game Engine Creator Mutiplatform\033[0m"
-            echo -e "[*] Packages: \033[1;33mgodot l7-godot\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " GAME_PKGS
-            if [[ $GAME_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry godot l7-godot
-            fi
+            xbps-remove -R godot l7-godot
             echo -e "\033[1;36m[13] CAD Sofware\033[0m"
-            echo -e "[*] Packages: \033[1;33mfreecad LibreCAD\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " GAME_PKGS
-            if [[ $GAME_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry freecad LibreCAD
-            fi
+            xbps-remove -R freecad LibreCAD
             echo -e "\033[1;36m[14] Program Compiler\033[0m"
-            echo -e "[*] Packages: \033[1;33mautomake bison fakeroot flex gdb libtool m4 patch pkg-config qemu-user-static scons yasm gcc-objc++ llvm clang icu cmake\033[0m"
-            read -e -p "[*] Remove: [Y/n]: " COMPILER_PKGS
-            if [[ $COMPILER_PKGS =~ ^[Yy]$ ]]; then
-              echo -e "[*] Remove: \033[1;33mYes\033[0m"
-              xbps-remove -Ry automake bison fakeroot flex gdb libtool m4 patch pkg-config qemu-user-static scons yasm gcc-objc++ llvm clang icu cmake
-            fi
+            xbps-remove -R automake bison fakeroot flex gdb libtool m4 patch \
+            pkg-config qemu-user-static scons yasm gcc-objc++ llvm clang icu cmake
             ;;
         --help|-h)
             usage
