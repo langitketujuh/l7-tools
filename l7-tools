@@ -55,16 +55,8 @@ prober-update-grub() {
 }
 
 check_enable_os_prober() {
-  if [ $(efibootmgr | wc -l) -eq 1 ]; then
-    # for legacy single, dualboot or more
-    if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" >/dev/null 2>&1; then
-      echo >/dev/null 2>&1
-      else
-      echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
-      echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
-      prober-update-grub
-    fi
-    else # if uefi singleboot
+  if [ $(find /boot/efi/ -name "EFI" -type d >/dev/null 2>&1 | grep EFI | wc -l) -eq 1 ]; then
+    # if uefi singleboot
     if [ $(ls /boot/efi/EFI/ | wc -l) -eq 1 ]; then
       if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" | grep '#' >/dev/null 2>&1; then
       echo >/dev/null 2>&1
@@ -95,6 +87,15 @@ check_enable_os_prober() {
           prober-update-grub
         fi
       fi
+    fi
+    else
+    # for legacy singleboot or more
+    if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" >/dev/null 2>&1; then
+      echo >/dev/null 2>&1
+      else
+      echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
+      echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
+      prober-update-grub
     fi
   fi
 }
