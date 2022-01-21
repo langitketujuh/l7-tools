@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-2.0-only"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.13"
+VERSION="1.18.14"
 
 ARCH=$(uname -m)
 
@@ -368,7 +368,7 @@ for arg in "$@"; do
               useradd $user_name -c "$full_name"
               echo -e "[*] Create new user password"
               passwd $user_name
-              usermod -a $user_name -G $user_group,audio,video,floppy,cdrom,optical,kvm,xbuilder
+              usermod -a $user_name -G $user_group,_pipewire,audio,bluetooth,colord,video,cdrom,floppy,kvm,optical,xbuilder
               echo -e "[*] User $user_name created successfully"
               else
               exit
