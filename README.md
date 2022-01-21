@@ -1,28 +1,40 @@
 # L7 Tools
 
-## Fungsi
+`l7-tools` merupakan perkakas cli untuk melakukan konfigurasi sistem seperti pembaruan, chroot mode, memasang grub, fiksasi boot order, memasang pengguna baru dan lain-lain.
 
-Sebagai perkakas pembaruan sistem operasi LangitKetujuh.
+- Memperbarui sistem agar menjadi lebih baru.
 
-- Pembaruan: `l7-tools -u`
-- Pro to lite: `l7-tools -d`
-- Bantuan: `l7-tools -h`
+  ```
+  l7-tools --update
+  ```
 
-```
-license : $LICENSE
-usage   : $NAME [option]
-option  :
-          --update      -u    update system
-          --remote      -r    remote from terminal
-          --downgrade   -d    downgrade & uninstall program
-          --help        -h    show this help
-          --version     -v    show $NAME version
+- Memasang grub.
 
-        color profile:
-          --adobe-icc   -a    install adobe icc
-          --idea-icc    -i    install idealliance icc
-          --eci-icc     -e    install eci icc
-          --jpma-icc    -j    install jpma icc
-          --vigc-icc    -g    install vigc icc
-          --snap-icc    -g    install snap committee icc
-```
+  ```
+  l7-tools --grub
+  ```
+
+- Masuk ke mode chroot, berguna untuk memperbaiki jika ada kernel panic atau masalah lainnya.
+
+  ```
+  l7-tools --chroot
+  ```
+
+- Memperbaiki screen tearing dan menampilakan grub menu sistem operasi lain.
+
+  ```
+  l7-tools --patch
+  ```
+
+- Memasang pengguna baru, berguna untuk mengatasi gagal login.
+
+  ```
+  l7-tools --user
+  ```
+
+- Menghapus perangkat lunak yang tidak dibutuhkan.
+  ```
+  l7-tools --downgrade
+  ```
+
+Anda memerlukan akses root (sudo/doas) untuk menjalankan perintah diatas. Lebih jelasnya jalankan `l7-tools --help`.
