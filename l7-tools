@@ -2,7 +2,7 @@
 
 TITLE="LangitKetujuh Tools"
 NAME=$(basename "$0")
-LICENSE="GPL-2.0-only"
+LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
 VERSION="1.18.14"
