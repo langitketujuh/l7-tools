@@ -182,7 +182,7 @@ check_patch() {
             if cat /usr/share/icons/breeze/places/64/start-here-kde.svg | grep -oE '#60a5fa' >/dev/null 2>&1; then
                 echo >/dev/null 2>&1
             else
-                P90 ="l7-breeze-icons"
+                P90="l7-breeze-icons"
             fi
         fi
         # P91 l7-plasma-desktop
