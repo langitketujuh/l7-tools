@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.20"
+VERSION="1.18.21"
 
 ARCH=$(uname -m)
 
@@ -315,7 +315,7 @@ for arg in "$@"; do
             read -e -p "[*] Do you want to continue? [y/N]: " KERNEL
             if [[ $KERNEL =~ ^[Yy]$ ]]; then
                 echo -e "[*] Yes, wait a minutes"
-                hblock
+                hblock >/dev/null 2>&1
             fi
             echo -e "\033[1;36m[5]\033[0m Remove all old kernels?"
             read -e -p "[*] Do you want to continue? [y/N]: " KERNEL
