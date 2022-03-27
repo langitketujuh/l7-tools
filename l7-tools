@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.21"
+VERSION="1.18.22"
 
 ARCH=$(uname -m)
 
@@ -98,35 +98,42 @@ check_version() {
 }
 
 check_repo() {
-    # V01 void-repo-nonfree
+    # V01 main repo
+    if xbps-query l7-repo | grep 'state: installed' >/dev/null 2>&1; then
+        L01="l7-repo"
+    else
+        echo >/dev/null 2>&1
+    fi
+    # V02 void-repo-nonfree
     if xbps-query void-repo-nonfree | grep 'state: installed' >/dev/null 2>&1; then
-        V01="void-repo-nonfree"
-        L01="l7-repo-nonfree"
+        V02="void-repo-nonfree"
+        L02="l7-repo-nonfree"
     else
         echo >/dev/null 2>&1
     fi
-    # V02 void-repo-multilib
+    # V03 void-repo-multilib
     if xbps-query void-repo-multilib | grep 'state: installed' >/dev/null 2>&1; then
-        V02="void-repo-multilib"
-        L02="l7-repo-multilib"
+        V03="void-repo-multilib"
+        L03="l7-repo-multilib"
     else
         echo >/dev/null 2>&1
     fi
-    # V03 void-repo-multilib-nonfree
+    # V04 void-repo-multilib-nonfree
     if xbps-query void-repo-multilib-nonfree | grep 'state: installed' >/dev/null 2>&1; then
-        V03="void-repo-multilib-nonfree"
-        L03="l7-repo-multilib-nonfree"
+        V04="void-repo-multilib-nonfree"
+        L04="l7-repo-multilib-nonfree"
     else
         echo >/dev/null 2>&1
     fi
     
     # check repo (remove or install)
-    if [ $(echo -n "$V01 $V02 $V03" | sed 's/ //g' | wc -c) -eq 0 ]; then
+    if [ $(echo -n "$V02 $V03 $V04" | sed 's/ //g' | wc -c) -eq 0 ]; then
         echo >/dev/null 2>&1
     else
         echo -e "\033[1;36m[*]\033[0m Change mirror repository"
-        xbps-remove -Ry $V01 $V02 $V03
-        xbps-install -Sfy $L01 $L02 $L03
+        xbps-remove -Ry $V02 $V03 $V03
+        xbps-install -Sfy $L01 $L02 $L03 $L04
+        xbps-install -S
     fi
 }
 
@@ -299,6 +306,9 @@ for arg in "$@"; do
     case $arg in
         --update|-u)
             check_root
+            echo -e "\033[1;36mLangitKetujuh Update System\033[0m"
+            echo -e "\e[3mUpdater for operating system and native apps\e[0m"
+            echo
             echo -e "\033[1;36m[1]\033[0m Synchronization"
             xbps-install -S;
             echo -e "\033[1;36m[2]\033[0m Full system upgrade"
@@ -332,16 +342,26 @@ for arg in "$@"; do
             quit
         ;;
         --remote|-r)
+            echo -e "\033[1;36mLangitKetujuh Terminal Remote\033[0m"
+            echo -e "\e[3mRemotely to other devices using upterm\e[0m"
+            echo
             if find ~/.ssh/ -name "*.pub" -type f >/dev/null 2>&1; then
                 echo -e >/dev/null 2>&1
             else
-                ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519
+                echo -e "[*] Create new ssh key"
+                ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519 >/dev/null 2>&1;
+                echo
             fi
-            tmate
+            echo -e "[*] Remote connecting"
+            upterm host
+            echo -e "[*] Remote exit!"
         ;;
         --chroot|-c)
             check_root
-            echo; lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
+            echo -e "\033[1;36mLangitKetujuh Chroot Tools\033[0m"
+            echo -e "\e[3mChange root and fix them\e[0m"
+            echo
+            lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
             echo
             read -e -p "[*] Root partition (ex: sda2): " root_part
             mount /dev/$root_part /mnt/
@@ -381,7 +401,10 @@ for arg in "$@"; do
         ;;
         --grub|-g)
             check_root
-            echo; lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
+            echo -e "\033[1;36mLangitKetujuh Grub Installer\033[0m"
+            echo -e "\e[3mInstalling grub & bootloader\e[0m"
+            echo
+            lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
             echo
             read -e -p "[*] Boot mode UEFI (y/n): " boot_opt
             if [[ $boot_opt =~ ^[Yy]$ ]]; then
@@ -408,6 +431,9 @@ for arg in "$@"; do
         ;;
         --user|-m)
             check_root
+            echo -e "\033[1;36mLangitKetujuh User Creator\033[0m"
+            echo -e "\e[3mCreating new userr\e[0m"
+            echo
             read -e -p "[*] User name: " user_name
             read -e -p "[*] Full name: " full_name
             read -e -p "[*] As Administrator (Y/n): " admin_user
@@ -422,7 +448,7 @@ for arg in "$@"; do
                 useradd $user_name -c "$full_name"
                 echo -e "[*] Create new user password"
                 passwd $user_name
-                usermod -a $user_name -G $user_group,_pipewire,audio,bluetooth,colord,video,cdrom,floppy,kvm,optical,xbuilder
+                usermod -a $user_name -G $user_group,audio,bluetooth,colord,video,cdrom,floppy,kvm,optical,xbuilder
                 echo -e "[*] User $user_name created successfully"
             else
                 exit
