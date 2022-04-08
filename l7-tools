@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.23"
+VERSION="1.18.24"
 
 ARCH=$(uname -m)
 
@@ -98,41 +98,42 @@ check_version() {
 }
 
 check_repo() {
-    # V01 main repo
+    # main repo
     if xbps-query l7-repo | grep 'state: installed' >/dev/null 2>&1; then
-        L01="l7-repo"
+        M00="l7-repo"
     else
         echo >/dev/null 2>&1
     fi
-    # V02 void-repo-nonfree
-    if xbps-query void-repo-nonfree | grep 'state: installed' >/dev/null 2>&1; then
-        V02="void-repo-nonfree"
-        L02="l7-repo-nonfree"
+    # slow server. return to alpha.de.repo.
+    # L01 l7-repo-nonfree
+    if xbps-query l7-repo-nonfree | grep 'state: installed' >/dev/null 2>&1; then
+        L01="l7-repo-nonfree"
+        V01="void-repo-nonfree"
     else
         echo >/dev/null 2>&1
     fi
-    # V03 void-repo-multilib
-    if xbps-query void-repo-multilib | grep 'state: installed' >/dev/null 2>&1; then
-        V03="void-repo-multilib"
-        L03="l7-repo-multilib"
+    # L02 l7-repo-multilib
+    if xbps-query l7-repo-multilib | grep 'state: installed' >/dev/null 2>&1; then
+        L02="l7-repo-multilib"
+        V02="void-repo-multilib"
     else
         echo >/dev/null 2>&1
     fi
-    # V04 void-repo-multilib-nonfree
-    if xbps-query void-repo-multilib-nonfree | grep 'state: installed' >/dev/null 2>&1; then
-        V04="void-repo-multilib-nonfree"
-        L04="l7-repo-multilib-nonfree"
+    # L03 l7-repo-multilib-nonfree
+    if xbps-query l7-repo-multilib-nonfree | grep 'state: installed' >/dev/null 2>&1; then
+        L03="l7-repo-multilib-nonfree"
+        V03="void-repo-multilib-nonfree"
     else
         echo >/dev/null 2>&1
     fi
     
     # check repo (remove or install)
-    if [ $(echo -n "$V02 $V03 $V04" | sed 's/ //g' | wc -c) -eq 0 ]; then
+    if [ $(echo -n "$L01 $L02 $L03" | sed 's/ //g' | wc -c) -eq 0 ]; then
         echo >/dev/null 2>&1
     else
         echo -e "\033[1;36m[*]\033[0m Change mirror repository"
-        xbps-remove -Ry $V02 $V03 $V03
-        xbps-install -Sfy $L01 $L02 $L03 $L04
+        xbps-remove -y $L01 $L02 $L03
+        xbps-install -Sfy $M01 $V01 $V02 $V03
         xbps-install -S
     fi
 }
