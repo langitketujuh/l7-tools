@@ -100,7 +100,7 @@ check_version() {
 check_repo() {
     # main repo
     if xbps-query l7-repo | grep 'state: installed' >/dev/null 2>&1; then
-        M00="l7-repo"
+        M01="l7-repo"
     else
         echo >/dev/null 2>&1
     fi
