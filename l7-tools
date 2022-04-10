@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.24.1"
+VERSION="1.18.25"
 
 ARCH=$(uname -m)
 
@@ -179,6 +179,12 @@ check_packages() {
             P05="runit-backlight"
         fi
     fi
+    # P06 l7-docs
+    if xbps-query -p pkgver l7-docs | grep '202' >/dev/null 2>&1; then
+        P06="l7-docs"
+    else
+        echo >/dev/null 2>&1
+    fi
     
     # if use kde plasma
     if xbps-query plasma-desktop | grep 'state: installed' >/dev/null 2>&1; then
@@ -230,11 +236,11 @@ check_packages() {
     fi
 
     # check packages
-    if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
+    if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
         echo >/dev/null 2>&1
     else
         echo -e "\033[1;36m[*]\033[0m Reinstall patch"
-        xbps-install -fy $P01 $P02 $P03 $P04 $P05 $P90 $P91 $P92 $P93 $P94
+        xbps-install -fy $P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94
     fi
     # check service
     for s in adb backlight bluetoothd bluez-alsa colord earlyoom ntpd zramen _pipewire; do
