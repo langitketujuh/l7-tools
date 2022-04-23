@@ -1,11 +1,11 @@
 [Desktop Entry]
-Comment[en_US]=Update Operating Sistem
+Comment[en_US]=Update Operating System
 Comment[id]=Perbarui Sistem Operasi
-Comment=Update Operating Sistem
+Comment=Update Operating System
 Exec=doas l7-tools --update
-GenericName[en_US]=Update Operating Sistem
+GenericName[en_US]=Update Operating System
 GenericName[id]=Perbarui Sistem Operasi
-GenericName=Update Operating Sistem
+GenericName=Update Operating System
 Icon=system-software-update
 Name[en_US]=Update System
 Name[id]=Perbarui Sistem
