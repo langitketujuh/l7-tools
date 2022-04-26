@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.27"
+VERSION="1.18.28"
 
 ARCH=$(uname -m)
 
@@ -23,7 +23,7 @@ option  :
           --grub        -g    install grub
           --patch       -p    reinstall patch
           --remote      -r    terminal remote
-          --update      -u    update system
+          --upgrade     -u    upgrade system
           --user        -m    create new user
           --help        -h    show this help
           --version     -v    show $NAME version
@@ -311,7 +311,7 @@ quit(){
 
 for arg in "$@"; do
     case $arg in
-        --update|-u)
+        --upgrade|-u)
             check_root
             echo -e "\033[1;36mLangitKetujuh Update System\033[0m"
             echo -e "\e[3mUpdater for operating system and native apps\e[0m"

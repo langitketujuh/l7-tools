@@ -1,17 +1,16 @@
 [Desktop Entry]
-Comment[en_US]=Update Operating System
+Comment[en_US]=Upgrade Operating System
 Comment[id]=Perbarui Sistem Operasi
-Comment=Update Operating System
-Exec=doas l7-tools --update
-GenericName[en_US]=Update Operating System
+Comment=Upgrade Operating System
+Exec=doas l7-tools --upgrade
+GenericName[en_US]=Upgrade Operating System
 GenericName[id]=Perbarui Sistem Operasi
-GenericName=Update Operating System
+GenericName=Upgrade Operating System
 Icon=system-software-update
-Name[en_US]=Update System
+Name[en_US]=Upgrade System
 Name[id]=Perbarui Sistem
-Name=Update System
+Name=Upgrade System
 NoDisplay=false
-OnlyShowIn=KDE;
 StartupNotify=true
 Terminal=1
 TerminalOptions=
