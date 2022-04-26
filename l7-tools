@@ -5,14 +5,14 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.29"
+VERSION="1.18.30"
 
 ARCH=$(uname -m)
 
 usage()
 {
     echo -e "\n\033[1;33m$TITLE $VERSION\033[0m"
-    echo -e "\e[3mConfiguring tool for update, chroot and grub installer.\e[0m"
+    echo -e "\e[3mConfiguring tool for upgrade, chroot and grub installer.\e[0m"
     echo
     cat <<- EOF
 license : $LICENSE
@@ -313,8 +313,8 @@ for arg in "$@"; do
     case $arg in
         --upgrade|-u)
             check_root
-            echo -e "\033[1;36mLangitKetujuh Update System\033[0m"
-            echo -e "\e[3mUpdater for operating system and native apps\e[0m"
+            echo -e "\033[1;36mLangitKetujuh Upgrade System\033[0m"
+            echo -e "\e[3mUpgrade applications and operating systems from repositories\e[0m"
             echo
             echo -e "\033[1;36m[1]\033[0m Synchronization"
             xbps-install -S;
