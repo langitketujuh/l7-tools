@@ -2,6 +2,10 @@
 
 `l7-tools` merupakan perkakas cli untuk melakukan konfigurasi sistem seperti pembaruan, chroot mode, memasang grub, fiksasi boot order, memasang pengguna baru dan lain-lain.
 
+Dependency:
+
+  `hblock upterm l7-base-files`
+
 - Memperbarui sistem agar menjadi lebih baru.
 
   ```
