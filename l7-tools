@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.30"
+VERSION="1.18.31"
 
 ARCH=$(uname -m)
 
@@ -39,7 +39,7 @@ check_root(){
 }
 
 check_screen_tearing_intel(){
-    if cat /usr/share/xbps.d/xbps.conf | grep xf86-video-intel >/dev/null 2>&1; then
+    if [ -f /usr/share/xbps.d/xbps.conf ] && grep -E "xf86-video-intel" /usr/share/xbps.d/xbps.conf >/dev/null 2>&1; then
         echo >/dev/null 2>&1
     else
         echo -e "\033[1;36m[*]\033[0m Remove Intel screen tearing"
@@ -51,12 +51,12 @@ check_screen_tearing_intel(){
 
 check_qtwebengine_dark_mode() {
     # if comment
-    if cat /etc/environment | grep force-dark-mode | grep '#' >/dev/null 2>&1; then
+    if [ -f /etc/environment ] && grep -E "force-dark-mode" /etc/environment | grep '#' >/dev/null 2>&1; then
         echo -e "\033[1;36m[*]\033[0m Enable Qtwebengine dark mode"
         sed -i 's/#QTWEBENGINE_CHROMIUM_FLAGS=--force-dark-mode/QTWEBENGINE_CHROMIUM_FLAGS=--force-dark-mode/' /etc/environment >/dev/null 2>&1
     else
         # if available, then skip
-        if cat /etc/environment | grep force-dark-mode >/dev/null 2>&1; then
+        if grep -E "force-dark-mode" /etc/environment >/dev/null 2>&1; then
             echo >/dev/null 2>&1
         else
             echo -e "\033[1;36m[*]\033[0m Enable Qtwebengine dark mode"
@@ -66,21 +66,20 @@ check_qtwebengine_dark_mode() {
 }
 
 check_enable_rtc_windows() {
-    if find /boot/ -name "Microsoft" -type d >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-    else
-        if cat /etc/rc.conf | grep '#HARDWARECLOCK="UTC"' >/dev/null 2>&1; then
+    if [ -d /boot/efi/EFI/Microsoft ]; then
+        if [ -f /etc/rc.conf ] && grep -E '#HARDWARECLOCK="UTC"' /etc/rc.conf; then
             echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows dualboot"
             sed -i 's/#HARDWARECLOCK="UTC"/HARDWARECLOCK="localtime"/' /etc/rc.conf
             echo -e "[*] HARDWARECLOCK=localtime"
-            if find /var/service/ -name "ntpd" -type d >/dev/null 2>&1; then
-                echo -e "\033[1;36m[*]\033[0m Disable automatic syncron clock service"
-                for f in ntpd openntpd ; do
-                    rm -v /var/service/${f} >/dev/null 2>&1
-                    echo -e "[*] removed '/var/service/${f}'"
-                done
-            fi
+            for s in ntpd openntpd ; do
+                if [ -h /var/service/${s} ]; then
+                    rm -v /var/service/${s} >/dev/null 2>&1
+                    echo -e "[*] removed '/var/service/${s}'"
+                fi
+            done
         fi
+    else
+        echo >/dev/null 2>&1
     fi
 }
 
@@ -99,32 +98,32 @@ check_version() {
 
 check_repo() {
     # main repo
-    if xbps-query l7-repo | grep 'state: installed' >/dev/null 2>&1; then
-        M01="l7-repo"
-    else
+    if [ -n $(xbps-query -p state l7-repo) ]; then
         echo >/dev/null 2>&1
+    else
+        M01="l7-repo"
     fi
     # slow server. return to alpha.de.repo.
     # L01 l7-repo-nonfree
-    if xbps-query l7-repo-nonfree | grep 'state: installed' >/dev/null 2>&1; then
+    if [ -n $(xbps-query -p state l7-repo-nonfree) ]; then
+        echo >/dev/null 2>&1
+    else
         L01="l7-repo-nonfree"
         V01="void-repo-nonfree"
-    else
-        echo >/dev/null 2>&1
     fi
     # L02 l7-repo-multilib
-    if xbps-query l7-repo-multilib | grep 'state: installed' >/dev/null 2>&1; then
+    if [ -n $(xbps-query -p state l7-repo-multilib) ]; then
+        echo >/dev/null 2>&1
+    else
         L02="l7-repo-multilib"
         V02="void-repo-multilib"
-    else
-        echo >/dev/null 2>&1
     fi
     # L03 l7-repo-multilib-nonfree
-    if xbps-query l7-repo-multilib-nonfree | grep 'state: installed' >/dev/null 2>&1; then
+    if [ -n $(xbps-query -p state l7-repo-multilib-nonfree) ]; then
+        echo >/dev/null 2>&1
+    else
         L03="l7-repo-multilib-nonfree"
         V03="void-repo-multilib-nonfree"
-    else
-        echo >/dev/null 2>&1
     fi
     
     # check repo (remove or install)
@@ -140,92 +139,99 @@ check_repo() {
 
 check_packages() {
     # P01 ardour
-    if xbps-query ardour | grep 'state: installed' >/dev/null 2>&1; then
-        if cat /usr/share/ardour6/themes/dark-ardour.colors | grep -oE '31363bff' >/dev/null 2>&1; then
+    if [ -n $(xbps-query -p state ardour) ]; then
+        if [ -f /usr/share/ardour6/themes/dark-ardour.colors ] && \
+        [ -n "$(grep -oE "31363bff" /usr/share/ardour6/themes/dark-ardour.colors)" ] ; then
             echo >/dev/null 2>&1
         else
             P01="l7-ardour"
         fi
     fi
     # P02 base-files
-    if xbps-query base-files | grep 'state: installed' >/dev/null 2>&1; then
-        if cat /usr/bin/lsb_release | grep -oE 'codename="langitketujuh"' >/dev/null 2>&1; then
+    if [ -n $(xbps-query -p state base-files) ]; then
+        if [ -f /usr/bin/lsb_release ] && \
+        [ -n "$(lsb_release -c | grep -E "langitketujuh")" ] ; then
             echo >/dev/null 2>&1
         else
             P02="l7-base-files"
         fi
     fi
     # P03 l7-runit-void
-    if xbps-query runit-void | grep 'state: installed' >/dev/null 2>&1; then
-        if cat /etc/os-release | grep -oE 'NAME="LangitKetujuh OS"' >/dev/null 2>&1; then
+    if [ -n $(xbps-query -p state runit-void) ]; then
+        if [ -f /etc/default/useradd ] && \
+        [ -n "$(grep -oE 'NAME="LangitKetujuh OS"' /etc/os-release)" ] ; then
             echo >/dev/null 2>&1
         else
             P03="l7-runit-void"
         fi
     fi
     # P04 l7-shadow
-    if xbps-query shadow | grep 'state: installed' >/dev/null 2>&1; then
-        if cat /etc/default/useradd | grep -oE 'fish' >/dev/null 2>&1; then
+    if [ -n $(xbps-query -p state shadow) ]; then
+        if [ -f /etc/default/useradd ] && \
+        [ -n "$(grep -oE 'fish' /etc/default/useradd)" ] ; then
             echo >/dev/null 2>&1
         else
             P04="l7-shadow"
         fi
     fi
+
     # P05 runit-backlight
-    if xbps-query runit | grep 'state: installed' >/dev/null 2>&1; then
-        if sv status backlight | grep run >/dev/null 2>&1; then
+    if [ -n $(xbps-query -p state runit) ]; then
+        if sv status backlight | grep 'run' >/dev/null 2>&1; then
             echo >/dev/null 2>&1
         else
             P05="runit-backlight"
         fi
     fi
     # P06 l7-docs
-    if xbps-query -p pkgver l7-docs | grep '202' >/dev/null 2>&1; then
-        P06="l7-docs"
-    else
+    if [ -n $(xbps-query -p pkgver l7-docs | grep '202') ]; then
         echo >/dev/null 2>&1
+    else
+        P06="l7-docs"
     fi
-    
     # if use kde plasma
-    if xbps-query plasma-desktop | grep 'state: installed' >/dev/null 2>&1; then
+    if [ -n $(xbps-query -p state plasma-desktop) ]; then
         echo >/dev/null 2>&1
         # P90 breeze-icons
-        if xbps-query breeze-icons | grep 'state: installed' >/dev/null 2>&1; then
-            if cat /usr/share/icons/breeze/places/64/start-here-kde.svg | grep -oE '#60a5fa' >/dev/null 2>&1; then
+        if [ -n $(xbps-query -p state breeze-icons) ]; then
+            if [ -f /usr/share/icons/breeze/places/64/start-here-kde.svg ] && \
+            [ -n "$(grep -oE "#60a5fa" /usr/share/icons/breeze/places/64/start-here-kde.svg)" ] ; then
                 echo >/dev/null 2>&1
             else
                 P90="l7-breeze-icons"
             fi
         fi
         # P91 l7-plasma-desktop
-        if xbps-query plasma-desktop | grep 'state: installed' >/dev/null 2>&1; then
-            if cat /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml \
-            | grep -oE 'system.upgrade' >/dev/null 2>&1; then
+        if [ -n $(xbps-query -p state plasma-desktop) ]; then
+            if [ -f /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml ] && \
+            [ -n "$(grep -E "system.upgrade" /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml)" ] ; then
                 echo >/dev/null 2>&1
             else
                 P91="l7-plasma-desktop"
             fi
         fi
         # P92 l7-plasma-framework
-        if xbps-query plasma-framework | grep 'state: installed' >/dev/null 2>&1; then
-            if cat /usr/share/plasma/desktoptheme/default/metadata.desktop \
-            | grep -oE 'defaultWallpaperTheme=LangitKetujuh' >/dev/null 2>&1; then
+        if [ -n $(xbps-query -p state plasma-framework) ]; then
+            if [ -f /usr/share/plasma/desktoptheme/default/metadata.desktop ] && \
+            [ -n "$(grep -E "defaultWallpaperTheme=LangitKetujuh" /usr/share/plasma/desktoptheme/default/metadata.desktop)" ] ; then
                 echo >/dev/null 2>&1
             else
                 P92="l7-plasma-framework"
             fi
         fi
         # P93 l7-sddm
-        if xbps-query sddm | grep 'state: installed' >/dev/null 2>&1; then
-            if cat /etc/sddm.conf.d/kde_settings.conf | grep -oE 'Current=langitketujuh' >/dev/null 2>&1; then
+        if [ -n $(xbps-query -p state sddm) ]; then
+            if [ -f /etc/sddm.conf.d/kde_settings.conf ] && \
+            [ -n "$(grep -E 'langitketujuh' /etc/sddm.conf.d/kde_settings.conf)" ] ; then
                 echo >/dev/null 2>&1
             else
                 P93="l7-sddm"
             fi
         fi
         # P94 l7-kservice
-        if xbps-query kservice | grep 'state: installed' >/dev/null 2>&1; then
-            if cat /etc/xdg/menus/applications.menu | grep -oE 'LangitKetujuh' >/dev/null 2>&1; then
+        if [ -n $(xbps-query -p state kservice) ]; then
+            if [ -f /etc/xdg/menus/applications.menu ] && \
+            [ -n "$(grep -oE 'LangitKetujuh' /etc/xdg/menus/applications.menu)" ] ; then
                 echo >/dev/null 2>&1
             else
                 P94="l7-kservice"
@@ -234,7 +240,6 @@ check_packages() {
     else
         echo >/dev/null 2>&1
     fi
-
     # check packages
     if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
         echo >/dev/null 2>&1
@@ -258,30 +263,22 @@ prober-update-grub() {
 }
 
 check_enable_os_prober() {
-    if [ $(find /boot/efi/ -name "EFI" -type d >/dev/null 2>&1 | grep EFI | wc -l) -eq 1 ]; then
-        # if uefi singleboot
+    if [ -d /boot/efi/EFI ]; then # if uefi singleboot
         if [ $(ls /boot/efi/EFI/ | wc -l) -eq 1 ]; then
-            if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" | grep '#' >/dev/null 2>&1; then
-                echo >/dev/null 2>&1
+            if [ -f /etc/default/grub ] && grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub >/dev/null 2>&1; then
+                sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
             else
-                if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" >/dev/null 2>&1; then
-                    echo -e "\033[1;36m[*]\033[0m Disable GRUB os-prober"
-                    sed -i 's/GRUB_DISABLE_OS_PROBER=false/#GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub >/dev/null 2>&1
-                    prober-update-grub
-                else
-                    echo -e "\033[1;36m[*]\033[0m Disable GRUB os-prober"
-                    echo "#GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
-                    prober-update-grub
-                fi
+                echo >/dev/null 2>&1
             fi
         else # if uefi dualboot or more
-            if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" | grep '#' >/dev/null 2>&1; then
+            if [ -f /etc/default/grub ] && grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub | grep '#' >/dev/null 2>&1; then
                 echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
                 echo -e "\033[1;36m[*] Detect Other EFI:\033[0m" $(ls /boot/efi/EFI/ | xargs)
-                sed -i 's/#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub >/dev/null 2>&1
+                sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
+                echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
                 prober-update-grub
             else
-                if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" >/dev/null 2>&1; then
+                if grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub >/dev/null 2>&1; then
                     echo >/dev/null 2>&1
                 else
                     echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
@@ -291,9 +288,8 @@ check_enable_os_prober() {
                 fi
             fi
         fi
-    else
-        # for legacy singleboot or more
-        if cat /etc/default/grub | grep "GRUB_DISABLE_OS_PROBER=false" >/dev/null 2>&1; then
+    else # for legacy singleboot or more
+        if [ -f /etc/default/grub ] && grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub >/dev/null 2>&1; then
             echo >/dev/null 2>&1
         else
             echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
