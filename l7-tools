@@ -140,11 +140,12 @@ check_repo() {
 check_packages() {
     # P01 ardour
     if [ -n $(xbps-query -p state ardour) ]; then
-        if [ -f /usr/share/ardour6/themes/dark-ardour.colors ] && \
-        [ -n "$(grep -oE "31363bff" /usr/share/ardour6/themes/dark-ardour.colors | sort -u)" ] ; then
+        if [ -f /usr/share/ardour6/themes/dark-ardour.colors ]; then
+            if [ -n "$(grep -oE "31363bff" /usr/share/ardour6/themes/dark-ardour.colors | sort -u)" ] ; then
             echo >/dev/null 2>&1
-        else
-            P01="l7-ardour"
+            else
+                P01="l7-ardour"
+            fi
         fi
     fi
     # P02 base-files
