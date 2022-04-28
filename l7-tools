@@ -191,6 +191,8 @@ check_packages() {
     fi
     # if use kde plasma
     if [ -n $(xbps-query -p state plasma-desktop) ]; then
+        echo >/dev/null 2>&1
+    else
         # P90 breeze-icons
         if [ -n $(xbps-query -p state breeze-icons) ]; then
             if [ -f /usr/share/icons/breeze/places/64/start-here-kde.svg ] && \
@@ -236,8 +238,6 @@ check_packages() {
                 P94="l7-kservice"
             fi
         fi
-    else
-        echo >/dev/null 2>&1
     fi
     # check packages
     if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
