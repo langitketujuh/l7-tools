@@ -140,8 +140,10 @@ check_repo() {
 check_packages() {
     # P01 ardour
     if [ -n $(xbps-query -p state ardour) ]; then
+        echo >/dev/null 2>&1
+    else
         if [ -f /usr/share/ardour6/themes/dark-ardour.colors ] && \
-        [ -n "$(grep -oE "31363bff" /usr/share/ardour6/themes/dark-ardour.colors)" ] ; then
+        [ -n "$(grep -oE "31363bff" /usr/share/ardour6/themes/dark-ardour.colors | sort -u)" ] ; then
             echo >/dev/null 2>&1
         else
             P01="l7-ardour"
@@ -149,6 +151,8 @@ check_packages() {
     fi
     # P02 base-files
     if [ -n $(xbps-query -p state base-files) ]; then
+        echo >/dev/null 2>&1
+    else
         if [ -f /usr/bin/lsb_release ] && \
         [ -n "$(lsb_release -c | grep -E "langitketujuh")" ] ; then
             echo >/dev/null 2>&1
@@ -158,6 +162,8 @@ check_packages() {
     fi
     # P03 l7-runit-void
     if [ -n $(xbps-query -p state runit-void) ]; then
+        echo >/dev/null 2>&1
+    else
         if [ -f /etc/default/useradd ] && \
         [ -n "$(grep -oE 'NAME="LangitKetujuh OS"' /etc/os-release)" ] ; then
             echo >/dev/null 2>&1
@@ -167,6 +173,8 @@ check_packages() {
     fi
     # P04 l7-shadow
     if [ -n $(xbps-query -p state shadow) ]; then
+        echo >/dev/null 2>&1
+    else
         if [ -f /etc/default/useradd ] && \
         [ -n "$(grep -oE 'fish' /etc/default/useradd)" ] ; then
             echo >/dev/null 2>&1
@@ -177,6 +185,8 @@ check_packages() {
 
     # P05 runit-backlight
     if [ -n $(xbps-query -p state runit) ]; then
+        echo >/dev/null 2>&1
+    else
         if sv status backlight | grep 'run' >/dev/null 2>&1; then
             echo >/dev/null 2>&1
         else
@@ -191,9 +201,12 @@ check_packages() {
     fi
     # if use kde plasma
     if [ -n $(xbps-query -p state plasma-desktop) ]; then
-        echo >/dev/null 2>&1
+            echo >/dev/null 2>&1
+        else
         # P90 breeze-icons
         if [ -n $(xbps-query -p state breeze-icons) ]; then
+            echo >/dev/null 2>&1
+        else
             if [ -f /usr/share/icons/breeze/places/64/start-here-kde.svg ] && \
             [ -n "$(grep -oE "#60a5fa" /usr/share/icons/breeze/places/64/start-here-kde.svg)" ] ; then
                 echo >/dev/null 2>&1
@@ -203,6 +216,8 @@ check_packages() {
         fi
         # P91 l7-plasma-desktop
         if [ -n $(xbps-query -p state plasma-desktop) ]; then
+            echo >/dev/null 2>&1
+        else
             if [ -f /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml ] && \
             [ -n "$(grep -E "system.upgrade" /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml)" ] ; then
                 echo >/dev/null 2>&1
@@ -212,6 +227,8 @@ check_packages() {
         fi
         # P92 l7-plasma-framework
         if [ -n $(xbps-query -p state plasma-framework) ]; then
+            echo >/dev/null 2>&1
+        else
             if [ -f /usr/share/plasma/desktoptheme/default/metadata.desktop ] && \
             [ -n "$(grep -E "defaultWallpaperTheme=LangitKetujuh" /usr/share/plasma/desktoptheme/default/metadata.desktop)" ] ; then
                 echo >/dev/null 2>&1
@@ -221,6 +238,8 @@ check_packages() {
         fi
         # P93 l7-sddm
         if [ -n $(xbps-query -p state sddm) ]; then
+            echo >/dev/null 2>&1
+        else
             if [ -f /etc/sddm.conf.d/kde_settings.conf ] && \
             [ -n "$(grep -E 'langitketujuh' /etc/sddm.conf.d/kde_settings.conf)" ] ; then
                 echo >/dev/null 2>&1
@@ -230,6 +249,8 @@ check_packages() {
         fi
         # P94 l7-kservice
         if [ -n $(xbps-query -p state kservice) ]; then
+            echo >/dev/null 2>&1
+        else
             if [ -f /etc/xdg/menus/applications.menu ] && \
             [ -n "$(grep -oE 'LangitKetujuh' /etc/xdg/menus/applications.menu)" ] ; then
                 echo >/dev/null 2>&1
@@ -237,8 +258,6 @@ check_packages() {
                 P94="l7-kservice"
             fi
         fi
-    else
-        echo >/dev/null 2>&1
     fi
     # check packages
     if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
