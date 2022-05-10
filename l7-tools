@@ -312,7 +312,6 @@ check_all() {
     check_version
     check_repo
     check_packages
-    check_screen_tearing_intel
     check_qtwebengine_dark_mode
     check_enable_rtc_windows
     check_welcome_runit
