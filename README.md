@@ -4,7 +4,7 @@
 
 Dependency:
 
-  `hblock upterm l7-base-files l7-opendoas`
+  `upterm l7-base-files l7-opendoas`
 
 - Memperbarui sistem agar menjadi lebih baru.
 
