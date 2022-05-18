@@ -9,7 +9,7 @@ Dependency:
 - Memperbarui sistem agar menjadi lebih baru.
 
   ```
-  l7-tools --update
+  l7-tools --upgrade
   ```
 
 - Memasang grub.
