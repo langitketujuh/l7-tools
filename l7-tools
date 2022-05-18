@@ -505,7 +505,7 @@ for arg in "$@"; do
             exit 0
         ;;
         *)
-            echo -e "Please run : \033[1;33mdoas l7-tools --update\033[0m"
+            echo -e "Please run : \033[1;33mdoas l7-tools --upgrade\033[0m"
             exit 0
     esac
 done
