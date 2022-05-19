@@ -53,10 +53,10 @@ check_version() {
 
 check_repo() {
     # main repo
-    if [ -n $(xbps-query -p state l7-repo) ]; then
-        echo >/dev/null 2>&1
-    else
+    if [ -z $(xbps-query -p state l7-repo) ]; then
         M01="l7-repo"
+    else
+        echo >/dev/null 2>&1
     fi
     # slow server. return to alpha.de.repo.
     # L01 l7-repo-nonfree
@@ -80,7 +80,7 @@ check_repo() {
         L03="l7-repo-multilib-nonfree"
         V03="void-repo-multilib-nonfree"
     fi
-    
+
     # check repo (remove or install)
     if [ $(echo -n "$L01 $L02 $L03" | sed 's/ //g' | wc -c) -eq 0 ]; then
         echo >/dev/null 2>&1
