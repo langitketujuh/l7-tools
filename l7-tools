@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.42"
+VERSION="1.18.43"
 
 ARCH=$(uname -m)
 
@@ -94,8 +94,12 @@ check_repo() {
 
 check_packages() {
     # P01 ardour
-    if [ -n $(xbps-query -p state ardour) ]; then
-        if [ -f /usr/share/ardour6/themes/dark-ardour.colors ]; then
+    if [ -z $(xbps-query -p state ardour) ]; then
+        echo >/dev/null 2>&1
+    else
+        if [ -z $(xbps-query -p state l7-ardour) ]; then
+            P01="l7-ardour"
+        else
             if [ -z "$(grep -oE "31363bff" /usr/share/ardour6/themes/dark-ardour.colors | sort -u)" ] ; then
                 P01="l7-ardour"
             else
@@ -104,57 +108,87 @@ check_packages() {
         fi
     fi
     # P02 base-files
-    if [ -n $(xbps-query -p state base-files) ]; then
-        if [ -f /usr/bin/lsb_release ] && \
-        [ -n "$(lsb_release -c | grep -E "langitketujuh")" ] ; then
-            echo >/dev/null 2>&1
-        else
+    if [ -z $(xbps-query -p state base-files) ]; then
+        echo >/dev/null 2>&1
+    else
+        if [ -z $(xbps-query -p state l7-base-files) ]; then
             P02="l7-base-files"
+        else
+            if [ -z "$(lsb_release -c | grep -E "langitketujuh")" ] ; then
+                P02="l7-base-files"
+            else
+                echo >/dev/null 2>&1
+            fi
         fi
     fi
     # P03 l7-runit-void
-    if [ -n $(xbps-query -p state runit-void) ]; then
-        if [ -f /etc/default/useradd ] && \
-        [ -n "$(grep -oE 'NAME="LangitKetujuh OS"' /etc/os-release)" ] ; then
-            echo >/dev/null 2>&1
-        else
+    if [ -z $(xbps-query -p state runit-void) ]; then
+        echo >/dev/null 2>&1
+    else
+        if [ -z $(xbps-query -p state l7-runit-void) ]; then
             P03="l7-runit-void"
+        else
+            if [ -z "$(grep -oE 'NAME="LangitKetujuh OS"' /etc/os-release)" ] ; then
+                P03="l7-runit-void"
+            else
+                echo >/dev/null 2>&1
+            fi
         fi
     fi
     # P04 l7-shadow
-    if [ -n $(xbps-query -p state shadow) ]; then
-        if [ -f /etc/default/useradd ] && \
-        [ -n "$(grep -oE 'fish' /etc/default/useradd)" ] ; then
-            echo >/dev/null 2>&1
-        else
+    if [ -z $(xbps-query -p state shadow) ]; then
+        echo >/dev/null 2>&1
+    else
+        if [ -z $(xbps-query -p state l7-shadow) ]; then
             P04="l7-shadow"
+        else
+            if [ -z "$(grep -oE 'fish' /etc/default/useradd)" ] ; then
+                P04="l7-shadow"
+            else
+                echo >/dev/null 2>&1
+            fi
         fi
     fi
-    # P05 runit-backlight
-    if [ -n $(xbps-query -p state runit) ]; then
+    # P05 goxel
+    if [ -z $(xbps-query -p state goxel) ]; then
+        # echo 'tidak ada goxel'
+        echo >/dev/null 2>&1
+    else
+        # echo 'ada goxel'
+        if [ -z $(xbps-query -p state l7-goxel) ]; then
+            # echo 'ada goxel, tidak ada l7-goxel'
+            P05="l7-goxel"
+        else
+            # echo 'ada goxel, ada l7-goxel'
+            if [ -z "$(grep -oE 'Name=Goxel' /usr/share/applications/goxel.desktop)" ] ; then
+                # echo 'ada goxel, ada l7-goxel, grep tidak ada'
+                P05="l7-goxel"
+            else
+                # echo 'ada goxel, ada l7-goxel, grep ada'
+                echo >/dev/null 2>&1
+            fi
+        fi
+    fi
+    # P06 runit-backlight
+    if [ -z $(xbps-query -p state runit-backlight) ]; then
         if sv status backlight | grep 'run' >/dev/null 2>&1; then
             echo >/dev/null 2>&1
         else
-            P05="runit-backlight"
+            P06="runit-backlight"
         fi
+    else
+        echo >/dev/null 2>&1
     fi
-    # P06 goxel
-    if [ -n $(xbps-query -p state goxel) ]; then
-        if [ -f /usr/share/applications/goxel.desktop ] && \
-        [ -n "$(grep -oE 'Name=Goxel' /usr/share/applications/goxel.desktop)" ] ; then
-            echo >/dev/null 2>&1
-        else
-            P06="l7-goxel"
-        fi
-    fi
-    # P06 l7-docs
+    # P07 l7-docs
     if [ -n $(xbps-query -p pkgver l7-docs | grep '202') ]; then
         echo >/dev/null 2>&1
     else
         P07="l7-docs"
     fi
     # if use kde plasma
-    if [ -n $(xbps-query -p state plasma-desktopp) ]; then
+    if [ -z $(xbps-query -p state plasma-desktop) ]; then
+        echo >/dev/null 2>&1
+    else
         # P90 l7-plasma-desktop
         if [ -z "$(grep -E "system.upgrade" /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml)" ] ; then
             P90="l7-plasma-desktop"
@@ -168,6 +202,8 @@ check_packages() {
             else
                 echo >/dev/null 2>&1
             fi
+        else
+            echo >/dev/null 2>&1
         fi
         # P92 l7-plasma-framework
         if [ -n $(xbps-query -p state plasma-framework) ]; then
@@ -176,6 +212,8 @@ check_packages() {
             else
                 echo >/dev/null 2>&1
             fi
+        else
+            echo >/dev/null 2>&1
         fi
         # P93 l7-sddm
         if [ -n $(xbps-query -p state sddm) ]; then
@@ -184,6 +222,8 @@ check_packages() {
             else
                 echo >/dev/null 2>&1
             fi
+        else
+            echo >/dev/null 2>&1
         fi
         # P94 l7-kservice
         if [ -n $(xbps-query -p state kservice) ]; then
@@ -192,9 +232,9 @@ check_packages() {
             else
                 echo >/dev/null 2>&1
             fi
+        else
+            echo >/dev/null 2>&1
         fi
-    else
-        echo >/dev/null 2>&1
     fi
     # check packages
     if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P07 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
