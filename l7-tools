@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.43"
+VERSION="1.18.44"
 
 ARCH=$(uname -m)
 
@@ -243,14 +243,6 @@ check_packages() {
         echo -e "\033[1;36m[*]\033[0m Reinstall patch"
         xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P07 $P90 $P91 $P92 $P93 $P94
     fi
-    # check service
-    for s in adb backlight bluetoothd bluez-alsa colord earlyoom ntpd zramen _pipewire; do
-        if sv status ${s} | grep run >/dev/null 2>&1; then
-            echo >/dev/null 2>&1
-        else
-            ln -s -f /etc/sv/${s} /var/service/
-        fi
-    done
 }
 
 check_qtwebengine_dark_mode() {
