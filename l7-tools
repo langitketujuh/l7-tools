@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.47"
+VERSION="1.18.48"
 
 ARCH=$(uname -m)
 
@@ -227,11 +227,11 @@ check_packages() {
         fi
     fi
     # check packages
-    if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P07 $P90 $P91 $P92 $P93" | sed 's/ //g' | wc -c) -eq 0 ]; then
+    if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P07 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
         echo >/dev/null 2>&1
     else
         echo -e "\033[1;36m[*]\033[0m Reinstall patch"
-        xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P07 $P90 $P91 $P92 $P93
+        xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P07 $P90 $P91 $P92 $P93 $P94
     fi
 }
 
