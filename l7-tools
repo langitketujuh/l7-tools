@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.48"
+VERSION="1.18.50"
 
 ARCH=$(uname -m)
 
@@ -479,9 +479,9 @@ for arg in "$@"; do
             read -e -p "[*] Full name: " full_name
             read -e -p "[*] As Administrator (Y/n): " admin_user
             if [[ $admin_user =~ ^[Yy]$ ]]; then
-                user_group="$user_name,wheel"
+                user_group="_pipewire,audio,bluetooth,cdrom,colord,floppy,kvm,lpadmin,optical,video,wheel,xbuilder"
             else
-                user_group="$user_name"
+                user_group="_pipewire,audio,bluetooth,cdrom,colord,floppy,kvm,lpadmin,optical,video,xbuilder"
             fi
             echo -e "[*] Create user: \033[1;36m$user_name ($full_name)\033[0m"
             read -e -p "[*] Continue create user (Y/n): " continue
@@ -489,7 +489,7 @@ for arg in "$@"; do
                 useradd $user_name -c "$full_name"
                 echo -e "[*] Create new user password"
                 passwd $user_name
-                usermod -a $user_name -G $user_group,_pipewire,audio,bluetooth,cdrom,colord,floppy,kvm,lpadmin,optical,video,xbuilder
+                usermod -a $user_name -G $user_group
                 echo -e "[*] User $user_name created successfully"
             else
                 exit
