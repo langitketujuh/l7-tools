@@ -489,7 +489,7 @@ for arg in "$@"; do
                 useradd $user_name -c "$full_name"
                 echo -e "[*] Create new user password"
                 passwd $user_name
-                usermod -a $user_name -G $user_group,audio,bluetooth,colord,video,cdrom,floppy,kvm,optical,xbuilder
+                usermod -a $user_name -G $user_group,_pipewire,audio,bluetooth,cdrom,colord,floppy,kvm,lpadmin,optical,video,xbuilder
                 echo -e "[*] User $user_name created successfully"
             else
                 exit
