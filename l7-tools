@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.50"
+VERSION="1.18.51"
 
 ARCH=$(uname -m)
 
@@ -149,41 +149,21 @@ check_packages() {
             fi
         fi
     fi
-    # P05 goxel
-    if [ -z $(xbps-query -p state goxel) ]; then
-        # echo 'tidak ada goxel'
-        echo >/dev/null 2>&1
-    else
-        # echo 'ada goxel'
-        if [ -z $(xbps-query -p state l7-goxel) ]; then
-            # echo 'ada goxel, tidak ada l7-goxel'
-            P05="l7-goxel"
-        else
-            # echo 'ada goxel, ada l7-goxel'
-            if [ -z "$(grep -oE 'Name=Goxel' /usr/share/applications/goxel.desktop)" ] ; then
-                # echo 'ada goxel, ada l7-goxel, grep tidak ada'
-                P05="l7-goxel"
-            else
-                # echo 'ada goxel, ada l7-goxel, grep ada'
-                echo >/dev/null 2>&1
-            fi
-        fi
-    fi
-    # P06 runit-backlight
+    # P05 runit-backlight
     if [ -z $(xbps-query -p state runit-backlight) ]; then
         if sv status backlight | grep 'run' >/dev/null 2>&1; then
             echo >/dev/null 2>&1
         else
-            P06="runit-backlight"
+            P05="runit-backlight"
         fi
     else
         echo >/dev/null 2>&1
     fi
-    # P07 l7-docs
+    # P06 l7-docs
     if [ -n $(xbps-query -p pkgver l7-docs | grep '202') ]; then
         echo >/dev/null 2>&1
     else
-        P07="l7-docs"
+        P06="l7-docs"
     fi
     # if use kde plasma
     if [ -z $(xbps-query -p state plasma-desktop) ]; then
@@ -227,11 +207,11 @@ check_packages() {
         fi
     fi
     # check packages
-    if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P07 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
+    if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -eq 0 ]; then
         echo >/dev/null 2>&1
     else
         echo -e "\033[1;36m[*]\033[0m Reinstall patch"
-        xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P07 $P90 $P91 $P92 $P93 $P94
+        xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94
     fi
 }
 
