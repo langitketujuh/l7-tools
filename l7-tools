@@ -245,17 +245,17 @@ check_enable_rtc_windows() {
             done
         fi
     else
-        echo >/dev/null 2>&1
+        if ! [ -d /var/service/ntpd ]; then
+            echo -e "\033[1;36m[*]\033[0m Enable service: ntpd"
+            ln -s /etc/sv/ntpd /var/service/ >/dev/null 2>&1
+        fi
     fi
 }
 
 check_welcome_runit() {
-    if [ -f /etc/runit/1 ] && grep -E "LangitKetujuh" /etc/runit/1 >/dev/null 2>&1; then
-        echo >/dev/null 2>&1
-    else
+    if [ -z "$(grep -E "LangitKetujuh" /etc/runit/1)" ] ; then
         echo -e "\033[1;36m[*]\033[0m Enable welcome to LangitKetujuh"
         sed -i 's/Void/LangitKetujuh/g' /etc/runit/1
-
     fi
 }
 
