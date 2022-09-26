@@ -240,7 +240,7 @@ check_enable_rtc_windows() {
             for s in ntpd openntpd ; do
                 if [ -h /var/service/${s} ]; then
                     rm -v /var/service/${s} >/dev/null 2>&1
-                    echo -e "[*] removed '/var/service/${s}'"
+                    echo -e "[*] Removed service: '/var/service/${s}'"
                 fi
             done
         fi
