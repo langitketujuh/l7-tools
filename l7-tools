@@ -232,9 +232,9 @@ for arg in "$@"; do
                 ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519 >/dev/null 2>&1;
                 echo
             fi
-            echo -e "[*] Remote connecting"
+            echo -e "\033[1;36m[*]\033[0m Remote connecting"
             upterm host
-            echo -e "[*] Remote exit!"
+            echo -e "\033[1;36m[*]\033[0m Remote exit!"
         ;;
         --chroot|-c)
             check_root
@@ -271,7 +271,7 @@ for arg in "$@"; do
             echo
             chroot /mnt/ /bin/fish
             umount -R /mnt >/dev/null 2>&1
-            echo -e "[*] Chroot exit"
+            echo -e "\033[1;36m[*]\033[0m Chroot exit"
         ;;
         --grub|-g)
             check_root
@@ -310,14 +310,14 @@ for arg in "$@"; do
             else
                 user_group="_pipewire,audio,bluetooth,cdrom,colord,floppy,kvm,lpadmin,optical,video,xbuilder"
             fi
-            echo -e "[*] Create user: \033[1;36m$user_name ($full_name)\033[0m"
+            echo -e "\033[1;36m[*]\033[0m Create user: \033[1;36m$user_name ($full_name)\033[0m"
             read -e -p "[*] Continue create user (Y/n): " continue
             if [[ $continue =~ ^[Yy]$ ]]; then
                 useradd $user_name -c "$full_name"
-                echo -e "[*] Create new user password"
+                echo -e "\033[1;36m[*]\033[0m Create new user password"
                 passwd $user_name
                 usermod -a $user_name -G $user_group
-                echo -e "[*] User $user_name created successfully"
+                echo -e "\033[1;36m[*]\033[0m User $user_name created successfully"
             else
                 exit 0
             fi
