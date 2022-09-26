@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.51"
+VERSION="1.18.52"
 
 ARCH=$(uname -m)
 
@@ -193,7 +193,6 @@ check_all() {
 }
 
 quit() {
-    echo
     read -n 1 -s -r -p "$ANYKEY"
     exit 0
 }
@@ -202,9 +201,6 @@ for arg in "$@"; do
     case $arg in
         --upgrade|-u)
             check_root
-            echo -e "\033[1;36mLangitKetujuh Upgrade System\033[0m"
-            echo -e "\e[3mUpgrade applications and operating systems from repositories\e[0m"
-            echo
             echo -e "\033[1;36m[1]\033[0m Synchronization"
             xbps-install -S
             echo -e "\033[1;36m[2]\033[0m Full system upgrade"
@@ -231,9 +227,6 @@ for arg in "$@"; do
             quit
         ;;
         --remote|-r)
-            echo -e "\033[1;36mLangitKetujuh Terminal Remote\033[0m"
-            echo -e "\e[3mRemotely to other devices using upterm\e[0m"
-            echo
             if [ -z $(find ~/.ssh/ -name "*.pub" -type f) ]; then
                 echo -e "[*] Create new ssh key"
                 ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519 >/dev/null 2>&1;
@@ -245,9 +238,6 @@ for arg in "$@"; do
         ;;
         --chroot|-c)
             check_root
-            echo -e "\033[1;36mLangitKetujuh Chroot Tools\033[0m"
-            echo -e "\e[3mChange root and fix them\e[0m"
-            echo
             lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
             echo
             read -e -p "[*] Root partition (ex: sda2): " root_part
@@ -285,9 +275,6 @@ for arg in "$@"; do
         ;;
         --grub|-g)
             check_root
-            echo -e "\033[1;36mLangitKetujuh Grub Installer\033[0m"
-            echo -e "\e[3mInstalling grub & bootloader\e[0m"
-            echo
             lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
             echo
             read -e -p "[*] Boot mode UEFI (y/n): " boot_opt
@@ -315,9 +302,6 @@ for arg in "$@"; do
         ;;
         --user|-m)
             check_root
-            echo -e "\033[1;36mLangitKetujuh User Creator\033[0m"
-            echo -e "\e[3mCreating new userr\e[0m"
-            echo
             read -e -p "[*] User name: " user_name
             read -e -p "[*] Full name: " full_name
             read -e -p "[*] As Administrator (Y/n): " admin_user
