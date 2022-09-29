@@ -66,10 +66,10 @@ check_packages() {
         P05="runit-backlight"
     fi
     # if use kde plasma
-    if [ -n $(xbps-query -p state plasma-desktop) ]; then
+    if  [[ -n $(xbps-query -p state plasma-desktop) && $(echo $?) -eq 0 ]]; then
         # P90 l7-plasma-desktop
         if [ -z "$(grep -E "system.upgrade" /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml)" ] ; then
-            P90="l7-plasma-desktop"
+        P90="l7-plasma-desktop"
         fi
         # P91 breeze-icons
         if [[ -n $(xbps-query -p state breeze) && -z "$(grep -oE "#292c2f" /usr/share/icons/breeze/apps/64/distributor-logo-langitketujuh.svg)" ]]; then
@@ -106,28 +106,30 @@ check_qtwebengine_dark_mode() {
 }
 
 check_enable_rtc_windows() {
-    if [ -d /boot/efi/EFI/Microsoft ]; then # UTC to localtime
-        if [[ -f /etc/rc.conf  && -n $(grep -E '#HARDWARECLOCK="UTC"' /etc/rc.conf) ]]; then
-            echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows dualboot"
-            sed -i 's|#HARDWARECLOCK="UTC"|HARDWARECLOCK="localtime"|' /etc/rc.conf
-            echo -e "[*] HARDWARECLOCK=localtime"
-            for s in ntpd openntpd ; do
-                if [ -h /var/service/${s} ]; then
-                    rm -v /var/service/${s} >/dev/null 2>&1
-                    echo -e "\033[1;36m[*]\033[0m Removed service: ${s}"
-                fi
-            done
-        fi
-    else # localtime to UTC
-        if [[ -f /etc/rc.conf  && -n $(grep -E 'HARDWARECLOCK="localtime' /etc/rc.conf) ]]; then
-            echo -e "\033[1;36m[*]\033[0m Enable UTC for single boot"
-            sed -i 's|HARDWARECLOCK="localtime"|#HARDWARECLOCK="UTC"|' /etc/rc.conf
-            echo -e "[*] HARDWARECLOCK=UTC"
-        fi
-        # Activated ntpd service
-        if ! [ -d /var/service/ntpd ]; then
-            echo -e "\033[1;36m[*]\033[0m Enable service: ntpd"
-            ln -s /etc/sv/ntpd /var/service/ >/dev/null 2>&1
+    if [ $(xbps-uhelper arch) != "x86_64-musl" ]; then
+        if [ -d /boot/efi/EFI/Microsoft ]; then # UTC to localtime
+            if [[ -f /etc/rc.conf  && -n $(grep -E '#HARDWARECLOCK="UTC"' /etc/rc.conf) ]]; then
+                echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows dualboot"
+                sed -i 's|#HARDWARECLOCK="UTC"|HARDWARECLOCK="localtime"|' /etc/rc.conf
+                echo -e "[*] HARDWARECLOCK=localtime"
+                for s in ntpd openntpd ; do
+                    if [ -h /var/service/${s} ]; then
+                        rm -v /var/service/${s} >/dev/null 2>&1
+                        echo -e "\033[1;36m[*]\033[0m Removed service: ${s}"
+                    fi
+                done
+            fi
+        else # localtime to UTC
+            if [[ -f /etc/rc.conf && -n $(grep -E 'HARDWARECLOCK="localtime' /etc/rc.conf) ]]; then
+                echo -e "\033[1;36m[*]\033[0m Enable UTC for single boot"
+                sed -i 's|HARDWARECLOCK="localtime"|#HARDWARECLOCK="UTC"|' /etc/rc.conf
+                echo -e "[*] HARDWARECLOCK=UTC"
+            fi
+            # Activated ntpd service
+            if ! [ -d /var/service/ntpd ]; then
+                echo -e "\033[1;36m[*]\033[0m Enable service: ntpd"
+                ln -s /etc/sv/ntpd /var/service/ >/dev/null 2>&1
+            fi
         fi
     fi
 }
