@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.54"
+VERSION="1.18.56"
 
 ARCH=$(uname -m)
 
@@ -115,6 +115,38 @@ check_qtwebengine_dark_mode() {
     fi
 }
 
+disable_openntpd() {
+    for time in ntpd openntpd ; do
+        if [ -h /var/service/${time} ]; then
+            rm -v /var/service/${time} >/dev/null 2>&1
+            echo -e "\033[1;36m[*]\033[0m Removed service: ${time}"
+        fi
+    done
+}
+
+enable_openntpd() {
+    if ! [ -d /var/service/openntpd ]; then
+        echo -e "\033[1;36m[*]\033[0m Enable service: openntpd"
+        ln -s /etc/sv/openntpd /var/service/ >/dev/null 2>&1
+    fi
+}
+
+localtime_to_utc() {
+    if [[ -f /etc/rc.conf && -n $(grep -E 'HARDWARECLOCK="localtime"' /etc/rc.conf) ]]; then
+        echo -e "\033[1;36m[*]\033[0m Enable UTC for single boot"
+        sed -i 's|HARDWARECLOCK="localtime"|#HARDWARECLOCK="UTC"|' /etc/rc.conf
+        echo -e "[*] HARDWARECLOCK=UTC"
+    fi
+}
+
+utc_to_localtime() {
+    if [[ -f /etc/rc.conf && -n $(grep -E '#HARDWARECLOCK="UTC"' /etc/rc.conf) ]]; then
+        echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows dualboot"
+        sed -i 's|#HARDWARECLOCK="UTC"|HARDWARECLOCK="localtime"|' /etc/rc.conf
+        echo -e "[*] HARDWARECLOCK=localtime"
+    fi
+}
+
 check_enable_rtc_windows() {
     if  [[ -z $(xbps-query -p state openntpd) && $(echo $?) -eq 2 ]]; then
         echo -e "\033[1;36m[*]\033[0m Install openntpd service"
@@ -122,34 +154,16 @@ check_enable_rtc_windows() {
         xbps-remove -y ntp
     fi
     if [ -n "$EFI_SYSTEM" ]; then
-        if [ -d /boot/efi/EFI/Microsoft ]; then # if uefi, then UTC to localtime
-            if [ $(xbps-uhelper arch) != "x86_64-musl" ]; then
-                if [[ -f /etc/rc.conf  && -n $(grep -E '#HARDWARECLOCK="UTC"' /etc/rc.conf) ]]; then
-                    echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows dualboot"
-                    sed -i 's|#HARDWARECLOCK="UTC"|HARDWARECLOCK="localtime"|' /etc/rc.conf
-                    echo -e "[*] HARDWARECLOCK=localtime"
-                fi
-            fi
-            for s in ntpd openntpd ; do
-                if [ -h /var/service/${s} ]; then
-                    rm -v /var/service/${s} >/dev/null 2>&1
-                    echo -e "\033[1;36m[*]\033[0m Removed service: ${s}"
-                fi
-            done
+        if [ -d /boot/efi/EFI/Microsoft ]; then # if uefi dual boot, then UTC to localtime
+            utc_to_localtime
+            disable_openntpd
+        else # if uefi single boot, then localtime to UTC
+            localtime_to_utc
+            enable_openntpd
         fi
     else # if legacy, then localtime to UTC
-        if [ $(xbps-uhelper arch) != "x86_64-musl" ]; then
-            if [[ -f /etc/rc.conf && -n $(grep -E 'HARDWARECLOCK="localtime' /etc/rc.conf) ]]; then
-                echo -e "\033[1;36m[*]\033[0m Enable UTC for single boot"
-                sed -i 's|HARDWARECLOCK="localtime"|#HARDWARECLOCK="UTC"|' /etc/rc.conf
-                echo -e "[*] HARDWARECLOCK=UTC"
-            fi
-        fi
-    fi
-    # enable service openntpd
-    if ! [ -d /var/service/openntpd ]; then
-        echo -e "\033[1;36m[*]\033[0m Enable service: openntpd"
-        ln -s /etc/sv/openntpd /var/service/ >/dev/null 2>&1
+        localtime_to_utc
+        enable_openntpd
     fi
 }
 
