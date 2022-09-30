@@ -188,25 +188,25 @@ prober_update_grub() {
 }
 
 check_enable_os_prober() {
-    if [ -d /boot/efi/EFI ]; then # if uefi singleboot
-        if [ $(ls /boot/efi/EFI/ | wc -l) -eq 1 ]; then
-            if [[ -f /etc/default/grub  && -n $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ]] ; then
-                sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
-            fi
-        else # if uefi dualboot or more
+    if [ -n "$EFI_SYSTEM" ]; then # if uefi
+        if [[ -d /boot/efi/EFI/LangitKetujuh && -d /boot/efi/EFI/Microsoft ]]; then  # if uefi dualboot with windows
             if [[ -f /etc/default/grub && -n $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub | grep '#') ]] ; then
                 echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
                 echo -e "\033[1;36m[*]\033[0m Detect Other EFI:" $(ls /boot/efi/EFI/ | xargs)
                 sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
                 echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
                 prober_update_grub
-            else
+            else # if uefi dual boot with other efi
                 if [ -z $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ] ; then
                     echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
                     echo -e "\033[1;36m[*]\033[0m Detect Other EFI:" $(ls /boot/efi/EFI/ | xargs)
                     echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
                     prober_update_grub
                 fi
+            fi
+        else # if uefi singleboot
+            if [[ -f /etc/default/grub  && -n $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ]] ; then
+                sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
             fi
         fi
     else # for legacy singleboot or more
