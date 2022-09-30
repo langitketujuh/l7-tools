@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.52"
+VERSION="1.18.54"
 
 ARCH=$(uname -m)
 
@@ -30,6 +30,16 @@ option  :
 
 EOF
 }
+# Detect if this is an EFI system.
+if [ -e /sys/firmware/efi/systab ]; then
+    EFI_SYSTEM=1
+    EFI_FW_BITS=$(cat /sys/firmware/efi/fw_platform_size)
+    if [ $EFI_FW_BITS -eq 32 ]; then
+        EFI_TARGET=i386-efi
+    else
+        EFI_TARGET=x86_64-efi
+    fi
+fi
 
 check_root(){
     if [ $(id -u) -ne 0 ]; then
@@ -106,31 +116,40 @@ check_qtwebengine_dark_mode() {
 }
 
 check_enable_rtc_windows() {
-    if [ $(xbps-uhelper arch) != "x86_64-musl" ]; then
-        if [ -d /boot/efi/EFI/Microsoft ]; then # UTC to localtime
-            if [[ -f /etc/rc.conf  && -n $(grep -E '#HARDWARECLOCK="UTC"' /etc/rc.conf) ]]; then
-                echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows dualboot"
-                sed -i 's|#HARDWARECLOCK="UTC"|HARDWARECLOCK="localtime"|' /etc/rc.conf
-                echo -e "[*] HARDWARECLOCK=localtime"
-                for s in ntpd openntpd ; do
-                    if [ -h /var/service/${s} ]; then
-                        rm -v /var/service/${s} >/dev/null 2>&1
-                        echo -e "\033[1;36m[*]\033[0m Removed service: ${s}"
-                    fi
-                done
+    if  [[ -z $(xbps-query -p state openntpd) && $(echo $?) -eq 2 ]]; then
+        echo -e "\033[1;36m[*]\033[0m Install openntpd service"
+        xbps-install -y openntpd
+        xbps-remove -y ntp
+    fi
+    if [ -n "$EFI_SYSTEM" ]; then
+        if [ -d /boot/efi/EFI/Microsoft ]; then # if uefi, then UTC to localtime
+            if [ $(xbps-uhelper arch) != "x86_64-musl" ]; then
+                if [[ -f /etc/rc.conf  && -n $(grep -E '#HARDWARECLOCK="UTC"' /etc/rc.conf) ]]; then
+                    echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows dualboot"
+                    sed -i 's|#HARDWARECLOCK="UTC"|HARDWARECLOCK="localtime"|' /etc/rc.conf
+                    echo -e "[*] HARDWARECLOCK=localtime"
+                fi
             fi
-        else # localtime to UTC
+            for s in ntpd openntpd ; do
+                if [ -h /var/service/${s} ]; then
+                    rm -v /var/service/${s} >/dev/null 2>&1
+                    echo -e "\033[1;36m[*]\033[0m Removed service: ${s}"
+                fi
+            done
+        fi
+    else # if legacy, then localtime to UTC
+        if [ $(xbps-uhelper arch) != "x86_64-musl" ]; then
             if [[ -f /etc/rc.conf && -n $(grep -E 'HARDWARECLOCK="localtime' /etc/rc.conf) ]]; then
                 echo -e "\033[1;36m[*]\033[0m Enable UTC for single boot"
                 sed -i 's|HARDWARECLOCK="localtime"|#HARDWARECLOCK="UTC"|' /etc/rc.conf
                 echo -e "[*] HARDWARECLOCK=UTC"
             fi
-            # Activated ntpd service
-            if ! [ -d /var/service/ntpd ]; then
-                echo -e "\033[1;36m[*]\033[0m Enable service: ntpd"
-                ln -s /etc/sv/ntpd /var/service/ >/dev/null 2>&1
-            fi
         fi
+    fi
+    # enable service openntpd
+    if ! [ -d /var/service/openntpd ]; then
+        echo -e "\033[1;36m[*]\033[0m Enable service: openntpd"
+        ln -s /etc/sv/openntpd /var/service/ >/dev/null 2>&1
     fi
 }
 
@@ -284,8 +303,8 @@ for arg in "$@"; do
                 read -e -p "[*] Continue install grub (Y/n): " continue
                 if [[ $continue =~ ^[Yy]$ ]]; then
                     echo
-                    grub-install --target=x86_64-efi \
-                    --efi-directory=/boot/efi --bootloader-id="LangitKetujuh"
+                    grub-install --target=$EFI_TARGET \
+                    --efi-directory=/boot/efi --bootloader-id="LangitKetujuh" --recheck
                     check_enable_os_prober
                 else
                     exit 0
