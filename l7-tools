@@ -30,6 +30,7 @@ option  :
 
 EOF
 }
+
 # Detect if this is an EFI system.
 if [ -e /sys/firmware/efi/systab ]; then
     EFI_SYSTEM=1
