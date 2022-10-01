@@ -147,7 +147,7 @@ utc_to_localtime() {
     fi
 }
 
-check_enable_rtc_windows() {
+check_hardware_clock() {
     if  [[ -z $(xbps-query -p state openntpd) && $(echo $?) -eq 2 ]]; then
         echo -e "\033[1;36m[*]\033[0m Install openntpd service"
         xbps-install -y openntpd
@@ -187,32 +187,33 @@ prober_update_grub() {
     update-grub
 }
 
-check_enable_os_prober() {
+os_prober_false() {
+    echo -e "\033[1;36m[*]\033[0m Disable grub os-prober"
+    echo -e "[*] Detect efi:" $(ls /boot/efi/EFI/ | xargs)
+    echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
+}
+
+check_os_prober() {
     if [ -n "$EFI_SYSTEM" ]; then # if uefi
         if [[ -d /boot/efi/EFI/LangitKetujuh && -d /boot/efi/EFI/Microsoft ]]; then  # if uefi dualboot with windows
             if [[ -f /etc/default/grub && -n $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub | grep '#') ]] ; then
-                echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
-                echo -e "\033[1;36m[*]\033[0m Detect Other EFI:" $(ls /boot/efi/EFI/ | xargs)
                 sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
-                echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
+                os_prober_false
                 prober_update_grub
             else # if uefi dual boot with other efi
                 if [ -z $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ] ; then
-                    echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
-                    echo -e "\033[1;36m[*]\033[0m Detect Other EFI:" $(ls /boot/efi/EFI/ | xargs)
-                    echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
+                    os_prober_false
                     prober_update_grub
                 fi
             fi
         else # if uefi singleboot
             if [[ -f /etc/default/grub  && -n $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ]] ; then
-                sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
+                os_prober_false
             fi
         fi
     else # for legacy singleboot or more
         if [[ -f /etc/default/grub && -z $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ]]; then
-            echo -e "\033[1;36m[*]\033[0m Enable GRUB os-prober"
-            echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
+            os_prober_false
             prober_update_grub
         fi
     fi
@@ -220,11 +221,11 @@ check_enable_os_prober() {
 
 check_all() {
     check_packages
+    check_hardware_clock
+    check_os_prober
     check_qtwebengine_dark_mode
-    check_enable_rtc_windows
     check_welcome_runit
     check_welcome_grub
-    check_enable_os_prober
 }
 
 quit() {
@@ -319,7 +320,7 @@ for arg in "$@"; do
                     echo
                     grub-install --target=$EFI_TARGET \
                     --efi-directory=/boot/efi --bootloader-id="LangitKetujuh" --recheck
-                    check_enable_os_prober
+                    check_os_prober
                 else
                     exit 0
                 fi
@@ -329,7 +330,7 @@ for arg in "$@"; do
                 if [[ $continue =~ ^[Yy]$ ]]; then
                     echo
                     grub-install /dev/$boot_loader
-                    check_enable_os_prober
+                    check_os_prober
                 else
                     exit 0
                 fi
