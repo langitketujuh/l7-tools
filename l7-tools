@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.56"
+VERSION="1.18.57"
 
 ARCH=$(uname -m)
 
@@ -116,19 +116,20 @@ check_qtwebengine_dark_mode() {
     fi
 }
 
-disable_openntpd() {
+disable_ntpd() {
     for time in ntpd openntpd ; do
         if [ -h /var/service/${time} ]; then
-            rm -v /var/service/${time} >/dev/null 2>&1
             echo -e "\033[1;36m[*]\033[0m Removed service: ${time}"
+            rm -v /var/service/${time}
         fi
     done
 }
 
-enable_openntpd() {
-    if ! [ -d /var/service/openntpd ]; then
-        echo -e "\033[1;36m[*]\033[0m Enable service: openntpd"
-        ln -s /etc/sv/openntpd /var/service/ >/dev/null 2>&1
+enable_ntpd() {
+    if ! [ -d /var/service/ntpd ]; then
+        echo -e "\033[1;36m[*]\033[0m Enable service: ntpd"
+        rm /var/service/openntpd
+        ln -s /etc/sv/ntpd /var/service/
     fi
 }
 
@@ -149,22 +150,25 @@ utc_to_localtime() {
 }
 
 check_hardware_clock() {
-    if  [[ -z $(xbps-query -p state openntpd) && $(echo $?) -eq 2 ]]; then
-        echo -e "\033[1;36m[*]\033[0m Install openntpd service"
-        xbps-install -y openntpd
-        xbps-remove -y ntp
+    if  [[ -n $(xbps-query -p state openntpd) && $(echo $?) -eq 0 ]]; then
+        echo -e "\033[1;36m[*]\033[0m Remove openntpd"
+        xbps-remove -y openntpd
+    fi
+    if  [[ -z $(xbps-query -p state ntp) && $(echo $?) -eq 2 ]]; then
+        echo -e "\033[1;36m[*]\033[0m Install ntpd"
+        xbps-install -y ntp
     fi
     if [ -n "$EFI_SYSTEM" ]; then
         if [ -d /boot/efi/EFI/Microsoft ]; then # if uefi dual boot, then UTC to localtime
             utc_to_localtime
-            disable_openntpd
+            disable_ntpd
         else # if uefi single boot, then localtime to UTC
             localtime_to_utc
-            enable_openntpd
+            enable_ntpd
         fi
     else # if legacy, then localtime to UTC
         localtime_to_utc
-        enable_openntpd
+        enable_ntpd
     fi
 }
 
