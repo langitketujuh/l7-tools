@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.58"
+VERSION="1.18.59"
 
 ARCH=$(uname -m)
 
@@ -143,7 +143,7 @@ localtime_to_utc() {
 
 utc_to_localtime() {
     if [[ -f /etc/rc.conf && -n $(grep -E '#HARDWARECLOCK="UTC"' /etc/rc.conf) ]]; then
-        echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows dualboot"
+        echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows boot"
         sed -i 's|#HARDWARECLOCK="UTC"|HARDWARECLOCK="localtime"|' /etc/rc.conf
         echo -e "[*] HARDWARECLOCK=localtime"
     fi
@@ -194,29 +194,29 @@ prober_update_grub() {
 
 os_prober_false() {
     echo -e "\033[1;36m[*]\033[0m Disable grub os-prober"
-    echo -e "[*] Detect efi:" $(ls /boot/efi/EFI/ | xargs)
+    echo -e "[*] Detect multiple efi:" $(ls /boot/efi/EFI/ | xargs)
     echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
 }
 
 check_os_prober() {
     if [ -n "$EFI_SYSTEM" ]; then # if uefi
-        if [[ -d /boot/efi/EFI/LangitKetujuh && -d /boot/efi/EFI/Microsoft ]]; then  # if uefi dualboot with windows
+        if [[ -d /boot/efi/EFI/LangitKetujuh && $(ls /boot/efi/EFI | wc -l) -ge "2" ]]; then  # if uefi multi boot but commented
             if [[ -f /etc/default/grub && -n $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub | grep '#') ]] ; then
                 sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
                 os_prober_false
                 prober_update_grub
-            else # if uefi dual boot with other efi
+            else # if uefi multi boot with other efi
                 if [ -z $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ] ; then
                     os_prober_false
                     prober_update_grub
                 fi
             fi
-        else # if uefi singleboot
+        else # if uefi single boot
             if [[ -f /etc/default/grub  && -n $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ]] ; then
                 sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
             fi
         fi
-    else # for legacy singleboot or more
+    else # for legacy single boot or more
         if [[ -f /etc/default/grub && -z $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ]]; then
             os_prober_false
             prober_update_grub
@@ -371,36 +371,42 @@ for arg in "$@"; do
             echo -e "\033[1;36m[1] Display Callibrator\033[0m"
             xbps-remove -R dispcalGUI
             echo -e "\033[1;36m[2] Add-ons 2D Software\033[0m"
-            xbps-remove -R gmic gmic-gimp gimp-lqr-plugin xsane-gimp resynthesizer l7-krita
+            xbps-remove -R gimp-lqr-plugin gmic gmic-gimp \
+            inkscape-generate-palette inkscape-incadiff inkscape-inx-pathops \
+            inkscape-nextgenerator resynthesizer
             echo -e "\033[1;36m[3] Photography Software\033[0m"
             xbps-remove -R digikam rawtherapee hugin Converseen
             echo -e "\033[1;36m[4] Non-linear Editor\033[0m"
-            xbps-remove -R kdenlive handbrake mkvtoolnix-gui
+            xbps-remove -R kdenlive handbrake mediainfo mkvtoolnix-gui
             echo -e "\033[1;36m[5] Font Maker\033[0m"
             xbps-remove -R fontforge
             echo -e "\033[1;36m[6] Digital Painting\033[0m"
             xbps-remove -R krita l7-krita gmic-krita
             echo -e "\033[1;36m[7] Recorder & Broadcaster Software\033[0m"
-            xbps-remove -R obs l7-obs
+            xbps-remove -R obs l7-obs screenkey slop
             echo -e "\033[1;36m[8] Layout & Desktop Publishing\033[0m"
-            xbps-remove -R scribus l7-scribus
+            xbps-remove -R scribus l7-scribus python3-tkinter
             echo -e "\033[1;36m[9] 2D/3D Animation Full Feature\033[0m"
-            xbps-remove -R blender l7-blender synfigstudio opentoonz
+            xbps-remove -R blender l7-blender opentoonz l7-opentoonz \
+            synfigstudio goxel l7-goxel
             echo -e "\033[1;36m[10] Audio Production\033[0m"
-            xbps-remove -R audacity l7-audacity ardour l7-ardour kid3 \
-            soundkonverter lmms freepats cmt alsa-plugins-jack zita-ajbridge \
-            zita-alsa-pcmi zita-at1 zita-njbridge zita-resampler \
-            alsa-plugins-samplerate calf fftw rubberband librubberband \
-            ladspa-bs2b speex mda-lv2 soundfont-fluid
+            xbps-remove -R Carla alsa-plugins-jack alsa-plugins-samplerate \
+            ardouraudacity cadence calf cmt fftw freepats jack_capture kid3 \
+            l7-ardour l7-audacity l7-carla ladspa-bs2b lmms mda-lv2 \
+            python3-rdflib rubberband soundfont-fluid soundkonverter \
+            speex zita-ajbridge zita-alsa-pcmi zita-at1 zita-njbridge \
+            zita-resampler abGate artyfx invada-studio-plugins \
+            invada-studio-plugins-lv2 swh-lv2 x42-plugins
             echo -e "\033[1;36m[11] Extra Google Fonts\033[0m"
             xbps-remove -R google-fonts-ttf
             echo -e "\033[1;36m[12] Game Engine Creator Mutiplatform\033[0m"
             xbps-remove -R godot l7-godot
             echo -e "\033[1;36m[13] CAD Sofware\033[0m"
-            xbps-remove -R freecad LibreCAD
+            xbps-remove -R freecad LibreCAD openscad l7-openscad
             echo -e "\033[1;36m[14] Program Compiler\033[0m"
             xbps-remove -R automake bison fakeroot flex gdb libtool m4 patch \
-            pkg-config qemu-user-static scons yasm gcc-objc++ llvm clang icu cmake
+            pkg-config qemu-user-static scons yasm gcc-objc++ llvm clang \
+            icu cmake
         ;;
         --help|-h)
             usage
