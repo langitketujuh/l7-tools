@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.59"
+VERSION="1.18.60"
 
 ARCH=$(uname -m)
 
@@ -72,9 +72,15 @@ check_packages() {
             P04="l7-shadow"
         fi
     fi
-    # P05 runit-backlight
+    # P05 l7-krita
+    if [[ -n $(xbps-query -p state krita) && -z $(xbps-query -p state l7-krita) ]]; then
+        if [ -z "$(grep -oE 'Breeze Dark' /etc/xdg/kritarc)" ] ; then
+            P05="l7-krita"
+        fi
+    fi
+    # P06 runit-backlight
     if [[ -z $(xbps-query -p state runit-backlight) && ! -h /var/service/backlight/run ]] ; then
-        P05="runit-backlight"
+        P06="runit-backlight"
     fi
     # if use kde plasma
     if  [[ -n $(xbps-query -p state plasma-desktop) && $(echo $?) -eq 0 ]]; then
@@ -96,9 +102,9 @@ check_packages() {
         fi
     fi
     # check packages
-    if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -ne 0 ]; then
+    if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -ne 0 ]; then
         echo -e "\033[1;36m[*]\033[0m Reinstall patch"
-        xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P90 $P91 $P92 $P93 $P94
+        xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94
     fi
 }
 
