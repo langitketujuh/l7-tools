@@ -5,7 +5,7 @@ NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.60"
+VERSION="1.18.61"
 
 ARCH=$(uname -m)
 
@@ -274,7 +274,7 @@ for arg in "$@"; do
             quit
         ;;
         --remote|-r)
-            if [ -z $(find ~/.ssh/ -name "*.pub" -type f) ]; then
+            if [ -z $(find ~/.ssh/ -name "id_ed25519.pub" -type f) ]; then
                 echo -e "[*] Create new ssh key"
                 ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519 >/dev/null 2>&1;
                 echo
