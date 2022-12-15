@@ -3,11 +3,8 @@
 TITLE="LangitKetujuh Tools"
 NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
-TMP="/tmp"
 ANYKEY=$(echo -e 'Press any key to quit')
 VERSION="1.18.61"
-
-ARCH=$(uname -m)
 
 usage()
 {
@@ -35,7 +32,7 @@ EOF
 if [ -e /sys/firmware/efi/systab ]; then
     EFI_SYSTEM=1
     EFI_FW_BITS=$(cat /sys/firmware/efi/fw_platform_size)
-    if [ $EFI_FW_BITS -eq 32 ]; then
+    if [ "$EFI_FW_BITS" -eq 32 ]; then
         EFI_TARGET=i386-efi
     else
         EFI_TARGET=x86_64-efi
@@ -43,7 +40,7 @@ if [ -e /sys/firmware/efi/systab ]; then
 fi
 
 check_root(){
-    if [ $(id -u) -ne 0 ]; then
+    if [ "$(id -u)" -ne 0 ]; then
         echo -e "\033[1;91m[FAILED]\033[0m Please run as root!"
         exit 0
     fi
@@ -104,7 +101,7 @@ check_packages() {
     # check packages
     if [ $(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c) -ne 0 ]; then
         echo -e "\033[1;36m[*]\033[0m Reinstall patch"
-        xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94
+        xbps-install -fIy "$P01" "$P02" "$P03" "$P04" "$P05" "$P06" "$P90" "$P91" "$P92" "$P93" "$P94"
     fi
 }
 
@@ -288,14 +285,14 @@ for arg in "$@"; do
             lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
             echo
             read -e -p "[*] Root partition (ex: sda2): " root_part
-            mount /dev/$root_part /mnt/
+            mount /dev/"$root_part" /mnt/
             read -e -p "[*] Boot mode uefi (y/n): " boot_opt
             if [[ $boot_opt =~ ^[Yy]$ ]]; then
                 # for separate efi partition (uefi)
                 read -e -p "[*] Boot efi partition (ex: sda1): " boot_part
                 boot_target="boot/efi"
                 mkdir -p /mnt/$boot_target
-                mount /dev/$boot_part /mnt/$boot_target
+                mount /dev/"$boot_part" /mnt/$boot_target
             else
                 # for separate bios partition (legacy)
                 read -e -p "[*] Separate boot bios partition (y/n): " boot_separate
@@ -303,7 +300,7 @@ for arg in "$@"; do
                     read -e -p "[*] Boot bios partition (ex: sda1): " boot_part
                     boot_target="boot"
                     mkdir -p /mnt/$boot_target
-                    mount /dev/$boot_part /mnt/$boot_target
+                    mount /dev/"$boot_part" /mnt/$boot_target
                 fi
             fi
             # mount sys, dev, proc, run
@@ -329,7 +326,7 @@ for arg in "$@"; do
                 read -e -p "[*] Continue install grub (Y/n): " continue
                 if [[ $continue =~ ^[Yy]$ ]]; then
                     echo
-                    grub-install --target=$EFI_TARGET \
+                    grub-install --target="$EFI_TARGET" \
                     --efi-directory=/boot/efi --bootloader-id="LangitKetujuh" --recheck
                     check_os_prober
                 else
@@ -340,7 +337,7 @@ for arg in "$@"; do
                 read -e -p "[*] Continue install grub (Y/n): " continue
                 if [[ $continue =~ ^[Yy]$ ]]; then
                     echo
-                    grub-install /dev/$boot_loader
+                    grub-install /dev/"$boot_loader"
                     check_os_prober
                 else
                     exit 0
@@ -360,10 +357,10 @@ for arg in "$@"; do
             echo -e "\033[1;36m[*]\033[0m Create user: \033[1;36m$user_name ($full_name)\033[0m"
             read -e -p "[*] Continue create user (Y/n): " continue
             if [[ $continue =~ ^[Yy]$ ]]; then
-                useradd $user_name -c "$full_name"
+                useradd "$user_name" -c "$full_name"
                 echo -e "\033[1;36m[*]\033[0m Create new user password"
-                passwd $user_name
-                usermod -a $user_name -G $user_group
+                passwd "$user_name"
+                usermod -a "$user_name" -G $user_group
                 echo -e "\033[1;36m[*]\033[0m User $user_name created successfully"
             else
                 exit 0
