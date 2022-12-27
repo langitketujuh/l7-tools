@@ -313,7 +313,7 @@ for arg in "$@"; do
             cp /etc/resolv.conf /mnt/etc/
             # chroot mode
             echo
-            chroot /mnt/ /bin/fish
+            chroot /mnt/ /bin/bash
             umount -R /mnt >/dev/null 2>&1
             echo -e "\033[1;36m[*]\033[0m Chroot exit"
         ;;
@@ -323,11 +323,12 @@ for arg in "$@"; do
             echo
             read -r -p "[*] Boot mode UEFI (y/n): " boot_opt
             if [[ $boot_opt =~ ^[Yy]$ ]]; then
+                read -r -p "[*] Bootloader id: " -i "LangitKetujuh" boot_id
                 read -r -p "[*] Continue install grub (Y/n): " continue
                 if [[ $continue =~ ^[Yy]$ ]]; then
                     echo
                     grub-install --target="$EFI_TARGET" \
-                    --efi-directory=/boot/efi --bootloader-id="LangitKetujuh" --recheck
+                    --efi-directory=/boot/efi --bootloader-id="$boot_id" --recheck
                     check_os_prober
                 else
                     exit 0
