@@ -323,7 +323,7 @@ for arg in "$@"; do
             echo
             read -r -p "[*] Boot mode UEFI (y/n): " boot_opt
             if [[ $boot_opt =~ ^[Yy]$ ]]; then
-                read -r -p "[*] Bootloader id: " -i "LangitKetujuh" boot_id
+                read -e -p "[*] Bootloader id: " -i "LangitKetujuh" boot_id
                 read -r -p "[*] Continue install grub (Y/n): " continue
                 if [[ $continue =~ ^[Yy]$ ]]; then
                     echo
