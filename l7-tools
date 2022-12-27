@@ -357,10 +357,9 @@ for arg in "$@"; do
             echo -e "\033[1;36m[*]\033[0m Create user: \033[1;36m$user_name ($full_name)\033[0m"
             read -r -p "[*] Continue create user (Y/n): " continue
             if [[ $continue =~ ^[Yy]$ ]]; then
-                useradd "$user_name" -c "$full_name"
+                useradd -m -G $user_group -s /bin/fish "$user_name" -c "$full_name"
                 echo -e "\033[1;36m[*]\033[0m Create new user password"
                 passwd "$user_name"
-                usermod -a "$user_name" -G $user_group
                 echo -e "\033[1;36m[*]\033[0m User $user_name created successfully"
             else
                 exit 0
@@ -373,10 +372,10 @@ for arg in "$@"; do
             check_root
             echo -e "\033[1;36m[1] Display Callibrator\033[0m"
             xbps-remove -R dispcalGUI
-            echo -e "\033[1;36m[2] Add-ons 2D Software\033[0m"
-            xbps-remove -R gimp-lqr-plugin gmic gmic-gimp \
-            inkscape-generate-palette inkscape-incadiff inkscape-inx-pathops \
-            inkscape-nextgenerator resynthesizer
+            echo -e "\033[1;36m[2] 2D Software\033[0m"
+            xbps-remove -R citramanik-qt gimp-lqr-plugin gmic l7-gimp gmic-gimp \
+            inkscape l7-inkscape l7-export inkscape-generate-palette inkscape-incadiff \
+            inkscape-inx-pathops inkscape-nextgenerator resynthesizer
             echo -e "\033[1;36m[3] Photography Software\033[0m"
             xbps-remove -R digikam rawtherapee hugin Converseen
             echo -e "\033[1;36m[4] Non-linear Editor\033[0m"
@@ -388,13 +387,13 @@ for arg in "$@"; do
             echo -e "\033[1;36m[7] Recorder & Broadcaster Software\033[0m"
             xbps-remove -R obs l7-obs screenkey slop
             echo -e "\033[1;36m[8] Layout & Desktop Publishing\033[0m"
-            xbps-remove -R scribus l7-scribus python3-tkinter
+            xbps-remove -R scribus l7-scribus
             echo -e "\033[1;36m[9] 2D/3D Animation Full Feature\033[0m"
             xbps-remove -R blender l7-blender opentoonz l7-opentoonz \
             synfigstudio goxel l7-goxel
             echo -e "\033[1;36m[10] Audio Production\033[0m"
             xbps-remove -R Carla alsa-plugins-jack alsa-plugins-samplerate \
-            ardouraudacity cadence calf cmt fftw freepats jack_capture kid3 \
+            ardour audacity cadence calf cmt fftw freepats jack_capture kid3 \
             l7-ardour l7-audacity l7-carla ladspa-bs2b lmms mda-lv2 \
             python3-rdflib rubberband soundfont-fluid soundkonverter \
             speex zita-ajbridge zita-alsa-pcmi zita-at1 zita-njbridge \
