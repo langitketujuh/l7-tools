@@ -48,60 +48,68 @@ check_root(){
 
 check_packages() {
     # P01 ardour
-    if [[ -n $(xbps-query -p state ardour) && -z $(xbps-query -p state l7-ardour) ]]; then
-        P01="l7-ardour"
+    if xbps-query -p state ardour >/dev/null 2>&1; then
+        if grep -q -oE 'value="dark"' /etc/ardour7/default_ui_config ; then
+            P01="l7-ardour"
+        fi
     fi
     # P02 base-files
-    if [[ -n $(xbps-query -p state base-files) && -z $(xbps-query -p state l7-base-files) ]]; then
-        if [ -z "$(lsb_release -c | grep -E "langitketujuh")" ] ; then
+    if xbps-query -p state base-files >/dev/null 2>&1; then
+        if lsb_release -c | grep -q -oE 'void' ; then
             P02="l7-base-files"
         fi
     fi
     # P03 l7-runit-void
-    if [[ -n $(xbps-query -p state runit-void) && -z $(xbps-query -p state l7-runit-void) ]]; then
-        if [ -z "$(grep -oE 'NAME="LangitKetujuh OS"' /etc/os-release)" ] ; then
+    if xbps-query -p state runit-void >/dev/null 2>&1; then
+        if grep -q -oE 'NAME="Void"' /etc/os-release ; then
             P03="l7-runit-void"
         fi
     fi
     # P04 l7-shadow
-    if [[ -n $(xbps-query -p state shadow) && -z $(xbps-query -p state l7-shadow) ]]; then
-        if [ -z "$(grep -oE 'fish' /etc/default/useradd)" ] ; then
+    if xbps-query -p state shadow >/dev/null 2>&1; then
+        if grep -q -oE "bash" /etc/default/useradd ; then
             P04="l7-shadow"
         fi
     fi
     # P05 l7-krita
-    if [[ -n $(xbps-query -p state krita) && -z $(xbps-query -p state l7-krita) ]]; then
-        if [ -z "$(grep -oE 'Breeze Dark' /etc/xdg/kritarc)" ] ; then
+    if xbps-query -p state krita >/dev/null 2>&1; then
+        if grep -q -oE "Krita dark" /etc/xdg/kritarc ; then
             P05="l7-krita"
         fi
     fi
     # P06 runit-backlight
-    if [[ -z $(xbps-query -p state runit-backlight) && ! -h /var/service/backlight/run ]] ; then
+    if ! xbps-query -p state runit-backlight >/dev/null 2>&1 ; then
         P06="runit-backlight"
     fi
     # if use kde plasma
-    if  [[ -n $(xbps-query -p state plasma-desktop) && $(echo $?) -eq 0 ]]; then
+    if xbps-query -p state plasma-desktop >/dev/null 2>&1 ; then
         # P90 l7-plasma-desktop
-        if [ -z "$(grep -E "system.upgrade" /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml)" ] ; then
-        P90="l7-plasma-desktop"
+        if ! grep -q -oE "system.upgrade" /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml ; then
+            P90="l7-plasma-desktop"
         fi
         # P91 breeze-icons
-        if [[ -n $(xbps-query -p state breeze) && -z "$(grep -oE "#292c2f" /usr/share/icons/breeze/apps/64/distributor-logo-langitketujuh.svg)" ]]; then
-            P91="l7-breeze l7-breeze-icons l7-breeze-gtk"
+        if xbps-query -p state breeze >/dev/null 2>&1 ; then
+            if ! grep -q -oE "#292c2f" /usr/share/icons/breeze/apps/64/distributor-logo-langitketujuh.svg ; then
+                P91="l7-breeze l7-breeze-icons l7-breeze-gtk"
+            fi
         fi
         # P92 l7-plasma-framework
-        if [[ -n $(xbps-query -p state plasma-framework) && -z "$(grep -E "defaultWallpaperTheme=LangitKetujuh" /usr/share/plasma/desktoptheme/default/metadata.desktop)" ]] ; then
-            P92="l7-plasma-framework"
+        if xbps-query -p state plasma-framework >/dev/null 2>&1 ; then
+            if ! grep -q -E "Theme=LangitKetujuh" /usr/share/plasma/desktoptheme/default/metadata.desktop ; then
+                P92="l7-plasma-framework"
+	    fi
         fi
         # P93 l7-kservice
-        if [[ -n $(xbps-query -p state kservice) && -z "$(grep -oE 'LangitKetujuh' /etc/xdg/menus/applications.menu)" ]] ; then
-            P94="l7-kservice"
+        if xbps-query -p state kservice >/dev/null 2>&1 ; then
+            if ! grep -q -oE 'LangitKetujuh' /etc/xdg/menus/applications.menu ; then
+                P93="l7-kservice"
+            fi
         fi
     fi
     # check packages
-    if [ "$(echo -n "$P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93 $P94" | sed 's/ //g' | wc -c)" -ne 0 ]; then
+    if [ "$(echo -n "$P01" "$P02" "$P03" "$P04" "$P05" "$P06" "$P90" "$P91" "$P92" "$P93" | sed 's/ //g' | wc -c)" -ne 0 ]; then
         echo -e "\033[1;36m[*]\033[0m Reinstall patch"
-        xbps-install -fIy "$P01" "$P02" "$P03" "$P04" "$P05" "$P06" "$P90" "$P91" "$P92" "$P93" "$P94"
+        xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93
     fi
 }
 
@@ -112,7 +120,7 @@ check_qtwebengine_dark_mode() {
         sed -i 's/#QTWEBENGINE_CHROMIUM_FLAGS=--force-dark-mode/QTWEBENGINE_CHROMIUM_FLAGS=--force-dark-mode/' /etc/environment >/dev/null 2>&1
     else
         # if not available
-        if [ -z "$(grep -E "force-dark-mode" /etc/environment)" ] ; then
+        if ! grep -q -E "force-dark-mode" /etc/environment ; then
             echo -e "\033[1;36m[*]\033[0m Enable Qtwebengine dark mode"
             echo "QTWEBENGINE_CHROMIUM_FLAGS=--force-dark-mode" >> /etc/environment
         fi
@@ -123,7 +131,7 @@ disable_ntpd() {
     for time in ntpd openntpd ; do
         if [ -h /var/service/${time} ]; then
             echo -e "\033[1;36m[*]\033[0m Removed service: ${time}"
-            rm -v /var/service/${time}
+            rsv disable ${time}
         fi
     done
 }
@@ -131,13 +139,13 @@ disable_ntpd() {
 enable_ntpd() {
     if ! [ -d /var/service/ntpd ]; then
         echo -e "\033[1;36m[*]\033[0m Enable service: ntpd"
-        rm /var/service/openntpd
-        ln -s /etc/sv/ntpd /var/service/
+        rsv disable openntpd
+        rsv enable ntpd
     fi
 }
 
 localtime_to_utc() {
-    if [[ -f /etc/rc.conf && -n $(grep -E 'HARDWARECLOCK="localtime"' /etc/rc.conf) ]]; then
+     if grep -q -E 'HARDWARECLOCK="localtime"' /etc/rc.conf ; then
         echo -e "\033[1;36m[*]\033[0m Enable UTC for single boot"
         sed -i 's|HARDWARECLOCK="localtime"|#HARDWARECLOCK="UTC"|' /etc/rc.conf
         echo -e "[*] HARDWARECLOCK=UTC"
@@ -145,7 +153,7 @@ localtime_to_utc() {
 }
 
 utc_to_localtime() {
-    if [[ -f /etc/rc.conf && -n $(grep -E '#HARDWARECLOCK="UTC"' /etc/rc.conf) ]]; then
+    if grep -q -E '#HARDWARECLOCK="UTC"' /etc/rc.conf ; then
         echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows boot"
         sed -i 's|#HARDWARECLOCK="UTC"|HARDWARECLOCK="localtime"|' /etc/rc.conf
         echo -e "[*] HARDWARECLOCK=localtime"
@@ -153,11 +161,11 @@ utc_to_localtime() {
 }
 
 check_hardware_clock() {
-    if  [[ -n $(xbps-query -p state openntpd) && $(echo $?) -eq 0 ]]; then
+    if xbps-query -p state openntpd >/dev/null 2>&1; then
         echo -e "\033[1;36m[*]\033[0m Remove openntpd"
         xbps-remove -y openntpd
     fi
-    if  [[ -z $(xbps-query -p state ntp) && $(echo $?) -eq 2 ]]; then
+    if ! xbps-query -p state ntp >/dev/null 2>&1; then
         echo -e "\033[1;36m[*]\033[0m Install ntpd"
         xbps-install -y ntp
     fi
@@ -176,14 +184,14 @@ check_hardware_clock() {
 }
 
 check_welcome_runit() {
-    if [ -z "$(grep -E "LangitKetujuh" /etc/runit/1)" ] ; then
+    if ! grep -q -E "LangitKetujuh" /etc/runit/1 ; then
         echo -e "\033[1;36m[*]\033[0m Enable welcome to LangitKetujuh"
         sed -i 's/Void/LangitKetujuh/g' /etc/runit/1
     fi
 }
 
 check_welcome_grub() {
-    if [[ -f /etc/default/grub  && -z $(grep -E "LangitKetujuh" /etc/default/grub) ]] ; then
+    if ! grep -q -E "LangitKetujuh" /etc/default/grub ; then
         echo -e "\033[1;36m[*]\033[0m Enable LangitKetujuh grub name"
         sed -i /etc/default/grub -res'#^(GRUB_DISTRIBUTOR).*#GRUB_DISTRIBUTOR="LangitKetujuh"#'
         update-grub
@@ -197,30 +205,32 @@ prober_update_grub() {
 
 os_prober_false() {
     echo -e "\033[1;36m[*]\033[0m Disable grub os-prober"
-    echo -e "[*] Detect multiple efi:" "$(ls /boot/efi/EFI/ | xargs)"
+    echo -e "[*] Detect multiple efi:" "$(find /boot/efi/EFI/ -type f -print0 | sed -e 's/\/boot\/efi\/EFI\///g' | xargs -0)"
     echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
 }
 
 check_os_prober() {
     if [ -n "$EFI_SYSTEM" ]; then # if uefi
-        if [[ -d /boot/efi/EFI/LangitKetujuh && $(ls /boot/efi/EFI | wc -l) -ge "2" ]]; then  # if uefi multi boot but commented
-            if [[ -f /etc/default/grub && -n $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub | grep '#') ]] ; then
-                sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
-                os_prober_false
-                prober_update_grub
-            else # if uefi multi boot with other efi
-                if [ -z "$(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub)" ] ; then
+        if [ -d /boot/efi/EFI/LangitKetujuh ] ; then
+            if [ "$(find /boot/efi/EFI/ -type f | sed -e 's/\/boot\/efi\/EFI\///g' | wc -l)" -ge "2" ] ; then  # if uefi multi boot but commented
+                if grep -q -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub | grep '#' ; then
+                    sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
                     os_prober_false
                     prober_update_grub
+                else # if uefi multi boot with other efi
+                    if ! grep -q -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub ; then
+                        os_prober_false
+                        prober_update_grub
+                    fi
                 fi
             fi
         else # if uefi single boot
-            if [[ -f /etc/default/grub  && -n $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ]] ; then
+            if grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub ; then
                 sed -i -e "/GRUB_DISABLE_OS_PROBER=false/d" /etc/default/grub
             fi
         fi
     else # for legacy single boot or more
-        if [[ -f /etc/default/grub && -z $(grep -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub) ]]; then
+        if ! grep -q -E "GRUB_DISABLE_OS_PROBER=false" /etc/default/grub ; then
             os_prober_false
             prober_update_grub
         fi
@@ -248,11 +258,11 @@ for arg in "$@"; do
             echo -e "\033[1;36m[1]\033[0m Synchronization"
             xbps-install -S
             echo -e "\033[1;36m[2]\033[0m Full system upgrade"
-            xbps-install -Iu
-            if ! [ $(echo $?) = "0" ]; then
+            if ! xbps-install -Iu ; then
                 # if new xbps available
                 xbps-install xbps
-                xbps-install -SIu
+                xbps-install -S
+                xbps-install -Iu
             fi
             echo -e "\033[1;36m[3]\033[0m Check trouble and patch"
             check_all
@@ -323,7 +333,7 @@ for arg in "$@"; do
             echo
             read -r -p "[*] Boot mode UEFI (y/n): " boot_opt
             if [[ $boot_opt =~ ^[Yy]$ ]]; then
-                read -e -p "[*] Bootloader id: " -i "LangitKetujuh" boot_id
+                read -r -p "[*] Bootloader id: " -i "LangitKetujuh" boot_id
                 read -r -p "[*] Continue install grub (Y/n): " continue
                 if [[ $continue =~ ^[Yy]$ ]]; then
                     echo
