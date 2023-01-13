@@ -292,7 +292,7 @@ for arg in "$@"; do
         ;;
         --chroot|-c)
             check_root
-            lsblk -o name,fstype,fsavail,fsused,fsuse%,size,mountpoint
+            lsblk -o name,fstype,size,label,mountpoint
             echo
             read -r -p "[*] Root partition (ex: sda2): " root_part
             mount /dev/"$root_part" /mnt/
