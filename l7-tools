@@ -361,9 +361,9 @@ for arg in "$@"; do
             read -r -p "[*] Full name: " full_name
             read -r -p "[*] As Administrator (Y/n): " admin_user
             if [[ $admin_user =~ ^[Yy]$ ]]; then
-                user_group="_pipewire,audio,bluetooth,cdrom,colord,floppy,kvm,lpadmin,optical,video,wheel,xbuilder"
+                user_group="_pipewire,audio,bluetooth,cdrom,floppy,kvm,optical,video,xbuilder,wheel"
             else
-                user_group="_pipewire,audio,bluetooth,cdrom,colord,floppy,kvm,lpadmin,optical,video,xbuilder"
+                user_group="_pipewire,audio,bluetooth,cdrom,floppy,kvm,optical,video,xbuilder"
             fi
             echo -e "\033[1;36m[*]\033[0m Create user: \033[1;36m$user_name ($full_name)\033[0m"
             read -r -p "[*] Continue create user (Y/n): " continue
