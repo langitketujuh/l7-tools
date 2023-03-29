@@ -156,6 +156,7 @@ utc_to_localtime() {
     if grep -q -E '#HARDWARECLOCK="UTC"' /etc/rc.conf ; then
         echo -e "\033[1;36m[*]\033[0m Enable localtime for Windows boot"
         sed -i 's|#HARDWARECLOCK="UTC"|HARDWARECLOCK="localtime"|' /etc/rc.conf
+        ln -sf /usr/share/zoneinfo/UTC /etc/localtime # GMT+0
         echo -e "[*] HARDWARECLOCK=localtime"
     fi
 }
