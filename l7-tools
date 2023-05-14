@@ -334,13 +334,14 @@ for arg in "$@"; do
             echo
             read -r -p "[*] Boot mode UEFI (y/n): " boot_opt
             if [[ $boot_opt =~ ^[Yy]$ ]]; then
-                read -r -p "[*] Bootloader id: " -i "LangitKetujuh" boot_id
+                read -e -p "[*] Bootloader id: " -i "LangitKetujuh" boot_id
                 read -r -p "[*] Continue install grub (Y/n): " continue
                 if [[ $continue =~ ^[Yy]$ ]]; then
                     echo
                     grub-install --target="$EFI_TARGET" \
                     --efi-directory=/boot/efi --bootloader-id="$boot_id" --recheck
                     check_os_prober
+                    prober_update_grub
                 else
                     exit 0
                 fi
@@ -351,6 +352,7 @@ for arg in "$@"; do
                     echo
                     grub-install /dev/"$boot_loader"
                     check_os_prober
+                    prober_update_grub
                 else
                     exit 0
                 fi
