@@ -9,7 +9,9 @@ install:
 	@cp -p l7-tools $(DESTDIR)$(PREFIX)/bin/l7-tools
 	@chmod 755 $(DESTDIR)$(PREFIX)/bin/l7-tools
 	@cp -p langitketujuh.system.upgrade.desktop $(DESTDIR)$(PREFIX)/share/applications/langitketujuh.system.upgrade.desktop
+	@cp -p langitketujuh.remote.desktop $(DESTDIR)$(PREFIX)/share/applications/langitketujuh.remote.desktop
 
 uninstall:
 	@rm -rf $(DESTDIR)$(PREFIX)/bin/l7-tools
 	@rm -rf $(DESTDIR)$(PREFIX)/share/applications/langitketujuh.system.upgrade.desktop
+	@rm -rf $(DESTDIR)$(PREFIX)/share/applications/langitketujuh.remote.desktop

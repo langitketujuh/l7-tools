@@ -1,0 +1,20 @@
+[Desktop Entry]
+Comment[en_US]=Remote via uptermd with terminal
+Comment[id]=Remote via uptermd dengan terminal
+Comment=Remote via uptermd with terminal
+Exec=l7-tools --remote
+GenericName[en_US]=Remote via uptermd with terminal
+GenericName[id]=Remote via uptermd dengan terminal
+GenericName=Remote via uptermd with terminal
+Icon=uos-remote-assistance
+Name[en_US]=Terminal Remote
+Name[id]=Remot Terminal
+Name=Terminal Remote
+NoDisplay=false
+StartupNotify=true
+Terminal=1
+TerminalOptions=
+Type=Application
+Categories=Qt;KDE;System;LangitKetujuh;
+X-KDE-SubstituteUID=false
+X-KDE-Username=
