@@ -2,7 +2,7 @@
 Comment[en_US]=Upgrade operating system
 Comment[id]=Perbarui sistem operasi
 Comment=Upgrade operating system
-Exec=doas l7-tools --upgrade
+Exec=l7-tools --upgrade
 GenericName[en_US]=Upgrade operating system
 GenericName[id]=Perbarui sistem operasi
 GenericName=Upgrade operating system
