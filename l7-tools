@@ -4,15 +4,15 @@ TITLE="LangitKetujuh Tools"
 NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.63"
+VERSION="1.18.65"
 
 SUDO=
-if command -v doas >/dev/null && [ -f /etc/doas.conf ]; then
+if [ "$(whoami)" = root ]; then
+    SUDO=sudo
+elif command -v doas >/dev/null && [ -f /etc/doas.conf ]; then
     SUDO=doas
 elif command -v sudo >/dev/null; then
     SUDO=sudo
-elif [ "$(whoami)" != root ]; then
-    SUDO='su root -c '\''"$@"'\'' -- -'
 fi
 
 usage()
