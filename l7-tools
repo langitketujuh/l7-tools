@@ -89,29 +89,23 @@ check_packages() {
         if ! grep -q -oE "system.upgrade" /usr/share/plasma/plasmoids/org.kde.plasma.kicker/contents/config/main.xml ; then
             P90="l7-plasma-desktop"
         fi
-        # P91 breeze-icons
-        if xbps-query -p state breeze >/dev/null 2>&1 ; then
-            if ! grep -q -oE "#292c2f" /usr/share/icons/breeze/apps/64/distributor-logo-langitketujuh.svg ; then
-                P91="l7-breeze l7-breeze-icons l7-breeze-gtk"
-            fi
-        fi
-        # P92 l7-plasma-framework
+        # P91 l7-plasma-framework
         if xbps-query -p state plasma-framework >/dev/null 2>&1 ; then
             if ! grep -q -E "Theme=LangitKetujuh" /usr/share/plasma/desktoptheme/default/metadata.desktop ; then
-                P92="l7-plasma-framework"
+                P91="l7-plasma-framework"
 	    fi
         fi
-        # P93 l7-kservice
+        # P92 l7-kservice
         if xbps-query -p state kservice >/dev/null 2>&1 ; then
             if ! grep -q -oE 'LangitKetujuh' /etc/xdg/menus/applications.menu ; then
-                P93="l7-kservice"
+                P92="l7-kservice"
             fi
         fi
     fi
     # check packages
-    if [ "$(echo -n "$P01" "$P02" "$P03" "$P04" "$P05" "$P06" "$P90" "$P91" "$P92" "$P93" | sed 's/ //g' | wc -c)" -ne 0 ]; then
+    if [ "$(echo -n "$P01" "$P02" "$P03" "$P04" "$P05" "$P06" "$P90" "$P91" "$P92" | sed 's/ //g' | wc -c)" -ne 0 ]; then
         echo -e "\033[1;36m[*]\033[0m Reinstall patch"
-        $SUDO xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92 $P93
+        $SUDO xbps-install -fIy $P01 $P02 $P03 $P04 $P05 $P06 $P90 $P91 $P92
     fi
 }
 
