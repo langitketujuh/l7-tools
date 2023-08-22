@@ -4,7 +4,7 @@ TITLE="LangitKetujuh Tools"
 NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.66"
+VERSION="1.18.68"
 
 SUDO=
 if [ "$(whoami)" = root ]; then
@@ -329,7 +329,7 @@ for arg in "$@"; do
             echo
             read -r -p "[*] Boot mode UEFI (y/n): " boot_opt
             if [[ $boot_opt =~ ^[Yy]$ ]]; then
-                read -e -p "[*] Bootloader id: " -i "LangitKetujuh" boot_id
+                read -e -p "[*] Bootloader id: " -i "langitketujuh" boot_id
                 read -r -p "[*] Continue install grub (Y/n): " continue
                 if [[ $continue =~ ^[Yy]$ ]]; then
                     echo
