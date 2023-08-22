@@ -278,7 +278,7 @@ for arg in "$@"; do
         ;;
         --remote|-r)
             if [ -z "$(find ~/.ssh/ -name "id_ed25519.pub" -type f)" ]; then
-                echo -e "[*] Create new ssh key"
+                echo -e "\033[1;36m[*]\033[0m Create new ssh key"
                 ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519 >/dev/null 2>&1;
                 echo
             fi
