@@ -4,7 +4,7 @@ TITLE="LangitKetujuh Tools"
 NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.68"
+VERSION="1.18.69"
 
 SUDO=
 if [ "$(whoami)" = root ]; then
@@ -318,9 +318,7 @@ for arg in "$@"; do
             $SUDO cp /etc/resolv.conf /mnt/etc/
             # chroot mode
             echo
-            # chroot /mnt/ /bin/bash
-            $SUDO chroot /mnt /nix/var/nix/profiles/system/activate
-            $SUDO chroot /mnt /run/current-system/sw/bin/su - hervyqa
+            $SUDO chroot /mnt/ /bin/bash
             $SUDO umount -R /mnt >/dev/null 2>&1
             echo -e "\033[1;36m[*]\033[0m Chroot exit"
         ;;
