@@ -4,7 +4,7 @@ TITLE="LangitKetujuh Tools"
 NAME=$(basename "$0")
 LICENSE="GPL-3.0-or-later"
 ANYKEY=$(echo -e 'Press any key to quit')
-VERSION="1.18.69"
+VERSION="1.18.70"
 
 SUDO=
 if [ "$(whoami)" = root ]; then
@@ -253,27 +253,27 @@ for arg in "$@"; do
         --upgrade|-u)
             echo -e "\033[1;36m[1]\033[0m Synchronization"
             $SUDO xbps-install -S
-            echo -e "\033[1;36m[2]\033[0m Full system upgrade"
+            echo -e "\033[1;36m[2]\033[0m \033[1;33m(Optional)\033[0m Remove all old kernels?"
+            read -r -p "[*] Do you want to continue? [y/N]: " KERNEL
+            if [[ $KERNEL =~ ^[Yy]$ ]]; then
+                echo -e "[*] Yes, wait a minutes"
+                $SUDO vkpurge rm all
+            fi
+            echo -e "\033[1;36m[3]\033[0m \033[1;33m(Optional)\033[0m Remove obsolete and orphans packages?"
+            read -r -p "[*] Do you want to continue? [y/N]: " CACHE
+            if [[ $CACHE =~ ^[Yy]$ ]]; then
+                echo -e "[*] Yes, wait a minutes"
+                $SUDO xbps-remove -vOoy
+            fi
+            echo -e "\033[1;36m[4]\033[0m Full system upgrade"
             if ! $SUDO xbps-install -Iu ; then
                 # if new xbps available
                 $SUDO xbps-install xbps
                 $SUDO xbps-install -S
                 $SUDO xbps-install -Iu
             fi
-            echo -e "\033[1;36m[3]\033[0m Check trouble and patch"
+            echo -e "\033[1;36m[5]\033[0m Check trouble and patch"
             check_all
-            echo -e "\033[1;36m[4]\033[0m \033[1;33m(Optional)\033[0m Remove all old kernels?"
-            read -r -p "[*] Do you want to continue? [y/N]: " KERNEL
-            if [[ $KERNEL =~ ^[Yy]$ ]]; then
-                echo -e "[*] Yes, wait a minutes"
-                $SUDO vkpurge rm all
-            fi
-            echo -e "\033[1;36m[5]\033[0m \033[1;33m(Optional)\033[0m Remove obsolete and orphans packages?"
-            read -r -p "[*] Do you want to continue? [y/N]: " CACHE
-            if [[ $CACHE =~ ^[Yy]$ ]]; then
-                echo -e "[*] Yes, wait a minutes"
-                $SUDO xbps-remove -vOoy
-            fi
             quit
         ;;
         --remote|-r)
